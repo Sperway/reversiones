@@ -928,8 +928,10 @@
   }
 
   /* ---------------- FORMATOS + BOOKING ---------------- */
+  // Los formatos están comentados en index.html por ahora: si no existen, se saltea
   const formats = DATA.formatos || [];
-  $("#formats").innerHTML = formats
+  const formatsEl = $("#formats");
+  if (formatsEl) formatsEl.innerHTML = formats
     .map(
       (f, i) => `
       <article class="unit reveal${f.destacado ? " unit--hot" : ""}" style="transition-delay:${i * 80}ms">
@@ -950,9 +952,10 @@
     .join("");
 
   const formatSelect = $("#formatSelect");
-  formatSelect.innerHTML =
-    `<option value="">A definir</option>` + formats.map((f) => `<option>${esc(f.nombre)}</option>`).join("");
-  $$("[data-format]").forEach((b) =>
+  if (formatSelect)
+    formatSelect.innerHTML =
+      `<option value="">A definir</option>` + formats.map((f) => `<option>${esc(f.nombre)}</option>`).join("");
+  if (formatSelect) $$("[data-format]").forEach((b) =>
     b.addEventListener("click", () => {
       formatSelect.value = b.dataset.format;
       $("#bookingForm").scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
@@ -998,7 +1001,7 @@
       `• Evento: ${fd.get("evento")}`,
       `• Fecha: ${fecha}`,
       fd.get("lugar") ? `• Lugar: ${fd.get("lugar")}` : "",
-      `• Formato: ${fd.get("formato") || "a definir"}`,
+      formatSelect ? `• Formato: ${fd.get("formato") || "a definir"}` : "",
       `• Invitados aprox.: ${guestsOut.textContent}`,
       fd.get("mensaje") ? `\n${fd.get("mensaje")}` : ""
     ].filter((l) => l !== "");
