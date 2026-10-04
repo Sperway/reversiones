@@ -63,7 +63,7 @@ window.EVENTO_FITO = {
        codificarInvitado({ nombre: "Nombre", rol: "Voz", foto: "assets/img/invitados/x.jpg" })
      Después del evento se muestran todos destapados. */
   invitados: [
-    { pista: "Seis cuerdas y mucha calle", desbloquea: "", secreto: "==QfiICI6Iyb09mZiACLiEmcyFGdpV3RiAiOiw2byJCIsISaulmcnVGbsVGUg8WajVHTiAiOiUmci12buJye" },
+    { pista: "Seis cuerdas y mucha calle", desbloquea: "", secreto: "==QficGcq5SMw0ybkFGdpZnbp9ycvRWY0lmdul2Ln1WavMHdlN3chJCI6Iyb09mZiACLiEmcyFGdpV3RiAiOiw2byJCIsISaulmcnVGbsVGUg8WajVHTiAiOiUmci12buJye" },
     { pista: "La armonía que se te queda en la cabeza", desbloquea: "2026-10-05", secreto: "=0nIiAiOi8GdvZmIgwiI69mdgkHIz9mcvNkIgojIs9mciACLikGZuFmcQBSa0FGViAiOiUmci12buJye" },
     { pista: "Una voz para cantar a los gritos", desbloquea: "2026-10-06", secreto: "=0nIiAiOi8GdvZmIgwiI69mViAiOiw2byJCIsISYylXZyJXZGBSZkVmRiAiOiUmci12buJye" },
     { pista: "Aire que se vuelve melodía", desbloquea: "2026-10-07", secreto: "9JiIgojIvR3bmJCIsIycvRnbllmViAiOiw2byJCIsISYsVWd65WZsFmVgQWa2FGRiAiOiUmci12buJye" },
