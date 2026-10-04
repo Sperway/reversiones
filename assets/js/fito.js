@@ -30,7 +30,8 @@
   const DIAS = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
   const MESES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
   const [y, mo, d] = String(EV.fecha || "").split("-").map(Number);
-  const [hh, mm] = String(EV.hora || "").split(":").map(Number);
+  // la cuenta regresiva apunta al show o, si no hay hora, a la apertura de puertas
+  const [hh, mm] = String(EV.hora || EV.apertura || "").split(":").map(Number);
   const hasDate = y && mo && d;
   const start = hasDate ? new Date(y, mo - 1, d, isNaN(hh) ? 0 : hh, isNaN(mm) ? 0 : mm) : null;
   // Se considera terminado a las 6 de la mañana del día siguiente
@@ -40,9 +41,10 @@
 
   /* ---------------- Afiche ---------------- */
   $("#presenta").textContent = EV.presenta || "";
-  $("#titulo").textContent = EV.titulo || "Fito Páez";
+  const NOMBRE = EV.titulo || "Todo Fito";
+  $("#titulo").textContent = NOMBRE;
   $("#bajada").textContent = EV.bajada || "";
-  document.title = `Homenaje a ${EV.titulo || "Fito Páez"} · Reversiones`;
+  document.title = `${NOMBRE} · Homenaje a ${EV.homenaje || "Fito Páez"} · Reversiones`;
 
   if (hasDate) {
     $("#stampDay").textContent = d;
@@ -53,8 +55,9 @@
   const facts = [];
   const cap = (w) => w.charAt(0).toUpperCase() + w.slice(1);
   if (hasDate) facts.push(`<b>${cap(DIAS[start.getDay()])}</b> ${d} de ${MESES[mo - 1]}`);
-  facts.push(EV.hora ? `<b>${esc(EV.hora)}</b> hs` : "Hora a confirmar");
-  if (EV.apertura && !isDone) facts.push(`Puertas <b>${esc(EV.apertura)}</b>`);
+  if (EV.apertura) facts.push(`Puertas <b>${esc(EV.apertura)}</b> hs`);
+  if (EV.hora) facts.push(`Show <b>${esc(EV.hora)}</b> hs`);
+  else if (!EV.apertura) facts.push("Hora a confirmar");
   facts.push([EV.lugar ? `<b>${esc(EV.lugar)}</b>` : "Sala a confirmar", esc(EV.ciudad || "")].filter(Boolean).join(" · "));
   if (EV.precio && !isDone) facts.push(`Entrada <b>${esc(EV.precio)}</b>`);
   $("#facts").innerHTML = facts.map((f) => `<li>${f}</li>`).join("");
@@ -107,6 +110,20 @@
 
   /* ---------------- Cómo va a ser ---------------- */
   $("#descripcion").textContent = EV.descripcion || "";
+  // Setlist secreto: los temas se descubren en vivo (títulos tapados)
+  if (EV.setlistSecreto || !(EV.cronograma || []).length) {
+    $("#cronograma").outerHTML = `
+      <div class="secret reveal">
+        <div class="secret__head">
+          <span class="secret__seal">Setlist secreto</span>
+          <span class="secret__side">Lado A · Lado B</span>
+        </div>
+        <ol class="secret__list">${[62, 48, 74, 55, 68, 42, 60, 51]
+          .map((w, i) => `<li><span class="secret__n">${String(i + 1).padStart(2, "0")}</span><span class="secret__bar" style="--w:${w}%"></span><span class="secret__q">?</span></li>`)
+          .join("")}</ol>
+        <p class="secret__foot">El repertorio <b>se descubre en vivo</b>. Vení a cantarlo.</p>
+      </div>`;
+  } else
   $("#cronograma").innerHTML = (EV.cronograma || [])
     .map(
       (c) => `
@@ -165,7 +182,7 @@
       })
       .join("");
   } else {
-    const link = waLink(`¡Hola Reversiones! Quiero entradas para el homenaje a ${EV.titulo || "Fito Páez"}. ¿Dónde las consigo?`);
+    const link = waLink(`¡Hola Reversiones! Quiero entradas para ${NOMBRE}. ¿Dónde las consigo?`);
     $("#puntos").innerHTML = `
       <article class="ticket ticket--empty reveal">
         <div class="ticket__main">
@@ -191,7 +208,7 @@
       </${tag}>`;
   });
   if (!isDone) {
-    const link = waLink(`¡Hola Reversiones! Me interesa sumarme como sponsor del homenaje a ${EV.titulo || "Fito Páez"}.`);
+    const link = waLink(`¡Hola Reversiones! Me interesa sumarme como sponsor de ${NOMBRE}.`);
     sponsorCards.push(`
       <${link ? "a" : "div"} class="sponsor sponsor--cta reveal"${link ? ` href="${link}" target="_blank" rel="noopener"` : ""}>
         <b>¿Querés sumarte?</b>
@@ -341,6 +358,218 @@
     const n = KEYMAP[e.key.toLowerCase()];
     if (n) press($(`.key[data-note="${n}"]`, piano));
   });
+
+  /* ---------------- Invitados sorpresa: raspadita ----------------
+     Cada tarjeta muestra una pista; al raspar la capa tecknicolor aparece
+     el invitado (nombre/rol/foto vienen codificados en evento-fito.js).
+     Las bloqueadas por fecha muestran cuánto falta. Lo descubierto se
+     recuerda en este navegador. Después del evento, todo destapado. */
+  const decodeSecret = (s) => {
+    try {
+      const bin = atob(String(s || "").split("").reverse().join(""));
+      return JSON.parse(new TextDecoder().decode(Uint8Array.from(bin, (c) => c.charCodeAt(0))));
+    } catch (e) {
+      return null;
+    }
+  };
+  window.codificarInvitado = (o) => {
+    const bytes = new TextEncoder().encode(JSON.stringify(o));
+    return btoa(String.fromCharCode(...bytes)).split("").reverse().join("");
+  };
+
+  const invitados = EV.invitados || [];
+  const SEEN_KEY = "todofito-invitados";
+  let seen = [];
+  try {
+    seen = JSON.parse(localStorage.getItem(SEEN_KEY)) || [];
+  } catch (e) {}
+  const remember = (i) => {
+    if (!seen.includes(i)) seen.push(i);
+    try {
+      localStorage.setItem(SEEN_KEY, JSON.stringify(seen));
+    } catch (e) {}
+  };
+  const unlockDate = (g) => {
+    const [uy, um, ud] = String(g.desbloquea || "").split("-").map(Number);
+    return uy && um && ud ? new Date(uy, um - 1, ud) : null;
+  };
+  const isLocked = (g) => !isDone && unlockDate(g) && new Date() < unlockDate(g);
+
+  function updateProgress() {
+    const total = invitados.length;
+    const found = isDone ? total : $$(".scratcher.is-revealed").length;
+    const locked = $$(".scratcher.is-locked").length;
+    $("#invitadosProgreso").innerHTML = isDone
+      ? ""
+      : `Descubriste <b>${found}</b> de <b>${total}</b>${locked ? ` · ${locked} todavía bloqueado${locked > 1 ? "s" : ""}` : ""}`;
+  }
+
+  function celebrate(card) {
+    // acorde de piano + mariposas que salen de la tarjeta
+    [60, 64, 67, 72].forEach((n, i) => setTimeout(() => playNote(n), i * 70));
+    if (reduceMotion) return;
+    for (let k = 0; k < 8; k++) {
+      const b = document.createElement("div");
+      b.className = "bf bf--burst";
+      b.style.cssText = `--s:${26 + Math.random() * 20}px;--x:${-160 + Math.random() * 320}px;--y:${-120 - Math.random() * 160}px;--r:${-40 + Math.random() * 80}deg`;
+      b.innerHTML = `<div class="bf__body"><svg viewBox="0 0 50 60"><use href="#wing"/></svg><i class="bf__torso"></i><svg viewBox="0 0 50 60"><use href="#wing" transform="matrix(-1 0 0 1 50 0)"/></svg></div>`;
+      $(".scratcher__media", card).appendChild(b);
+      setTimeout(() => b.remove(), 1600);
+    }
+  }
+
+  const people = invitados.map((g) => decodeSecret(g.secreto) || {});
+
+  function reveal(card, i, animate) {
+    card.classList.add("is-revealed");
+    // el nombre recién se escribe al descubrirlo
+    $(".scratcher__name b", card).textContent = people[i].nombre || "";
+    $(".scratcher__name span", card).textContent = people[i].rol || "";
+    const cv = $("canvas", card);
+    if (cv) setTimeout(() => cv.remove(), animate ? 500 : 0);
+    const btn = $(".scratcher__btn", card);
+    if (btn) btn.remove();
+    remember(i);
+    if (animate) celebrate(card);
+    updateProgress();
+  }
+
+  function setupScratch(card, i) {
+    const media = $(".scratcher__media", card);
+    const cv = document.createElement("canvas");
+    cv.className = "scratcher__foil";
+    cv.setAttribute("aria-hidden", "true");
+    media.appendChild(cv);
+    const c = cv.getContext("2d", { willReadFrequently: true });
+    const size = () => {
+      // tamaño sin la inclinación de la tarjeta (getBoundingClientRect la incluye)
+      const r = { width: media.clientWidth, height: media.clientHeight };
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      cv.width = r.width * dpr;
+      cv.height = r.height * dpr;
+      c.setTransform(dpr, 0, 0, dpr, 0, 0);
+      // capa raspable: franjas tecknicolor con brillo metálico
+      const g = c.createLinearGradient(0, 0, r.width, r.height);
+      ["#e8217c", "#ffb000", "#14b8c9", "#6f3bd8"].forEach((col, k) => g.addColorStop(k / 3, col));
+      c.globalCompositeOperation = "source-over";
+      c.fillStyle = g;
+      c.fillRect(0, 0, r.width, r.height);
+      c.fillStyle = "rgba(255,255,255,.18)";
+      for (let x = -r.height; x < r.width; x += 18) {
+        c.beginPath();
+        c.moveTo(x, r.height);
+        c.lineTo(x + r.height, 0);
+        c.lineTo(x + r.height + 7, 0);
+        c.lineTo(x + 7, r.height);
+        c.fill();
+      }
+      c.fillStyle = "#fffdf7";
+      c.textAlign = "center";
+      c.font = `400 ${Math.round(r.width / 6.5)}px "Abril Fatface", Georgia, serif`;
+      c.fillText("RASPÁ", r.width / 2, r.height / 2 + 4);
+      c.font = `600 ${Math.round(r.width / 11)}px Caveat, cursive`;
+      c.fillText("y descubrí quién es", r.width / 2, r.height / 2 + r.width / 7);
+    };
+    size();
+    let down = false;
+    let last = null;
+    let moves = 0;
+    // redibuja con las tipografías del afiche cuando terminan de cargar (si nadie raspó todavía)
+    if (document.fonts)
+      Promise.all([document.fonts.load('400 30px "Abril Fatface"'), document.fonts.load("600 20px Caveat")]).then(() => {
+        if (!moves && cv.isConnected) size();
+      });
+    const scratchAt = (e) => {
+      // coordenadas locales aunque la tarjeta esté inclinada
+      const r = cv.getBoundingClientRect();
+      const ang = (parseFloat(getComputedStyle(card).rotate) || 0) * (Math.PI / 180);
+      const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+      const dx = e.clientX - cx, dy = e.clientY - cy;
+      const p = {
+        x: cv.clientWidth / 2 + dx * Math.cos(-ang) - dy * Math.sin(-ang),
+        y: cv.clientHeight / 2 + dx * Math.sin(-ang) + dy * Math.cos(-ang)
+      };
+      c.globalCompositeOperation = "destination-out";
+      c.lineWidth = Math.max(26, cv.clientWidth / 8);
+      c.lineCap = "round";
+      c.beginPath();
+      c.moveTo((last || p).x, (last || p).y);
+      c.lineTo(p.x, p.y);
+      c.stroke();
+      last = p;
+      if (++moves % 12 === 0 && clearedRatio() > 0.5) reveal(card, i, true);
+    };
+    const clearedRatio = () => {
+      const d = c.getImageData(0, 0, cv.width, cv.height).data;
+      let clear = 0, total = 0;
+      for (let k = 3; k < d.length; k += 4 * 24) {
+        total++;
+        if (d[k] < 40) clear++;
+      }
+      return clear / total;
+    };
+    cv.addEventListener("pointerdown", (e) => {
+      down = true;
+      last = null;
+      cv.setPointerCapture(e.pointerId);
+      scratchAt(e);
+      e.preventDefault();
+    });
+    // también raspa si se entra a la tarjeta con el botón ya apretado
+    cv.addEventListener("pointermove", (e) => (down || e.buttons & 1) && scratchAt(e));
+    cv.addEventListener("pointerleave", () => (last = null));
+    cv.addEventListener("pointerup", () => ((down = false), (last = null)));
+    // alternativa sin raspar (teclado / lectores de pantalla)
+    $(".scratcher__btn", card).addEventListener("click", () => reveal(card, i, true));
+  }
+
+  if (invitados.length) {
+    $("#invitados").hidden = false;
+    if (isDone) {
+      $("#invitados .sec__kicker").textContent = "Gracias";
+      $("#invitados h2").textContent = "Invitados especiales";
+      $("#invitadosLead").textContent = "Los que se sumaron a la noche.";
+    }
+    const fmtDay = (dt) => `${DIAS[dt.getDay()]} ${dt.getDate()}`;
+    $("#invitadosList").innerHTML = invitados
+      .map((g, i) => {
+        const locked = isLocked(g);
+        const who = locked ? {} : people[i]; // las bloqueadas no revelan nada
+        const foto = asset(who.foto);
+        return `
+        <article class="scratcher reveal${locked ? " is-locked" : ""}" style="--tilt:${tilt(i + 1)}deg" data-i="${i}">
+          <header class="scratcher__head"><span>Invitado especial</span><b>#${String(i + 1).padStart(2, "0")}</b></header>
+          <div class="scratcher__media">
+            <div class="scratcher__prize">
+              ${foto ? `<img src="${esc(foto)}" alt="" loading="lazy">` : `<span class="scratcher__initial">${esc((who.nombre || "?").trim().charAt(0))}</span>`}
+            </div>
+            ${locked ? `<div class="scratcher__lock"><span>🔒</span><b>Se desbloquea</b><small>el ${fmtDay(unlockDate(g))}</small><em data-unlock="${unlockDate(g).getTime()}"></em></div>` : ""}
+          </div>
+          <div class="scratcher__body">
+            ${g.pista ? `<p class="scratcher__clue">“${esc(g.pista)}”</p>` : ""}
+            <p class="scratcher__name"><b></b><span></span></p>
+            ${locked || isDone ? "" : `<button class="scratcher__btn" type="button">Revelar sin raspar</button>`}
+          </div>
+        </article>`;
+      })
+      .join("");
+    $$(".scratcher").forEach((card) => {
+      const i = +card.dataset.i;
+      if (card.classList.contains("is-locked")) return;
+      if (isDone || seen.includes(i)) reveal(card, i, false);
+      else setupScratch(card, i);
+    });
+    // cuenta regresiva de las bloqueadas
+    const lockTick = () =>
+      $$(".scratcher__lock em").forEach((em) => {
+        const s = Math.max(0, Math.floor((+em.dataset.unlock - Date.now()) / 1000));
+        if (!s) return location.reload();
+        em.textContent = `${Math.floor(s / 86400)}d ${pad(Math.floor((s % 86400) / 3600))}h ${pad(Math.floor((s % 3600) / 60))}m`;
+      });
+    lockTick();
+    setInterval(lockTick, 30000);
+    updateProgress();
+  }
 
   /* ---------------- Aparición al hacer scroll ---------------- */
   const obs = new IntersectionObserver(

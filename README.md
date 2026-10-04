@@ -77,7 +77,9 @@ Subpágina en **`/eventos/fito-paez/`** con estética propia (afiche de los 90, 
 
 Todos los datos están en **`assets/js/evento-fito.js`**: fecha, hora, sala, precio, descripción, cronograma, puntos de venta físicos (con botón "Cómo llegar"), sponsors (logo, link y tipo; "Sponsor principal" se muestra más grande) y el bloque `recuerdo`. Los integrantes se toman de `content.js`.
 
-**Después del evento** la página cambia sola a modo recuerdo: oculta la venta de entradas, muestra el mensaje de agradecimiento y las fotos y videos cargados en `recuerdo`, y el banner de la portada pasa a decir "Así se vivió".
+**Invitados sorpresa (juego de raspadita):** cada invitado es una tarjeta con una pista; se raspa con el mouse o el dedo para descubrirlo (hay un botón alternativo "Revelar sin raspar"). Con `desbloquea: "AAAA-MM-DD"` la tarjeta queda bloqueada con cuenta regresiva hasta ese día. Nombre, rol y foto van **codificados** en `secreto` para que no se lean a simple vista (no es cifrado real: alguien con conocimientos técnicos podría decodificarlo). Para generar uno, en la consola del navegador en la página del evento: `codificarInvitado({ nombre, rol, foto })`. Lo descubierto se recuerda en cada navegador.
+
+**Después del evento** la página cambia sola a modo recuerdo: oculta la venta de entradas, destapa a todos los invitados, muestra el mensaje de agradecimiento y las fotos y videos cargados en `recuerdo`, y el banner de la portada pasa a decir "Así se vivió".
 
 ## Ver localmente
 

@@ -293,10 +293,12 @@
     $("#navEvent").hidden = false;
     $("#ebDay").textContent = ed;
     $("#ebMonth").textContent = MESES_LARGOS[em - 1].slice(0, 3);
-    $("#ebTitle").textContent = "Homenaje a " + (EV.titulo || "Fito Páez");
+    $("#ebTitle").textContent = EV.titulo || "Todo Fito";
+    $("#ebKicker").textContent = "Evento especial · Homenaje a " + (EV.homenaje || "Fito Páez");
+    $("#navEvent").lastChild.textContent = EV.titulo || "Todo Fito";
     $("#ebInfo").textContent = [
       `${DIAS_LARGOS[evDate.getDay()]} ${ed} de ${MESES_LARGOS[em - 1]}`,
-      EV.hora ? EV.hora + " hs" : "",
+      EV.hora ? EV.hora + " hs" : EV.apertura ? "Puertas " + EV.apertura + " hs" : "",
       EV.lugar || "",
       EV.ciudad || ""
     ]
