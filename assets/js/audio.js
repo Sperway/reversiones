@@ -846,26 +846,69 @@
       level: () => rms(analyser),
 
       /* Toma real del músico (archivo de audio) pasando por este pedal.
-         Suena en loop; el footswitch prende/apaga el efecto sin cortarla. */
+         Se decodifica a un AudioBuffer y se repite con loop nativo de Web Audio:
+         sin el hueco que deja <audio loop> al volver a empezar, así una toma
+         exportada a compás justo queda a tempo. El footswitch prende/apaga el
+         efecto sin cortarla. */
       takeEl: null,
       toggleTake(url, onState) {
-        let el = pedal.takeEl;
-        if (!el) {
-          el = pedal.takeEl = new Audio();
-          el.src = url;
-          el.loop = true;
-          el.preload = "auto";
-          ctx.createMediaElementSource(el).connect(input);
-          A._takes.add(el);
-          ["play", "pause", "error"].forEach((ev) => el.addEventListener(ev, () => onState && onState(ev)));
+        let tk = pedal.takeEl;
+        if (!tk) {
+          tk = pedal.takeEl = {
+            paused: true,
+            buffer: null,
+            src: null,
+            offset: 0, // segundos dentro de la toma donde se pausó
+            startedAt: 0,
+            loading: null,
+            load() {
+              if (!tk.loading)
+                tk.loading = fetch(url)
+                  .then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(r.status)))
+                  .then((data) => new Promise((ok, fail) => ctx.decodeAudioData(data, ok, fail)))
+                  .then((buf) => (tk.buffer = buf));
+              return tk.loading;
+            },
+            play() {
+              return tk.load().then(() => {
+                const src = ctx.createBufferSource();
+                src.buffer = tk.buffer;
+                src.loop = true;
+                src.connect(input);
+                src.start(0, tk.offset % tk.buffer.duration);
+                tk.src = src;
+                tk.startedAt = ctx.currentTime - tk.offset;
+                tk.paused = false;
+                onState && onState("play");
+              });
+            },
+            pause() {
+              if (tk.paused) return;
+              tk.offset = (ctx.currentTime - tk.startedAt) % tk.buffer.duration;
+              try {
+                tk.src.stop();
+              } catch (e) {}
+              tk.src.disconnect();
+              tk.src = null;
+              tk.paused = true;
+              onState && onState("pause");
+            }
+          };
+          A._takes.add(tk);
         }
-        if (!el.paused) {
-          el.pause();
+        if (!tk.paused) {
+          tk.pause();
           return Promise.resolve(false);
         }
-        A.pauseTakes(el);
+        A.pauseTakes(tk);
         A.stop(); // el tema del inicio no suena encima de la toma
-        return el.play().then(() => true);
+        return tk.play().then(
+          () => true,
+          (err) => {
+            onState && onState("error");
+            throw err;
+          }
+        );
       }
     };
     return pedal;

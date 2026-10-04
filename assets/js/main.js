@@ -553,7 +553,7 @@
     };
     const toggleTake = () => {
       if (!ensurePedal()) return;
-      audioPedal.toggleTake(toma, onTakeState).catch(() => onTakeState("error"));
+      audioPedal.toggleTake(toma, onTakeState).catch(() => {}); // el error ya lo avisa onTakeState
     };
     const useTake = () => hasToma && !takeFailed;
 
