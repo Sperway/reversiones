@@ -8,7 +8,7 @@
 window.REVERSIONES = {
   banda: {
     nombre: "Reversiones",
-    bajada: "Reversiones de Rock Nacional",
+    bajada: "Reversiones del Rock Nacional",
     ciudad: "Firmat, Santa Fe, Argentina",
     descripcion:
       "Somos Reversiones, una banda de Firmat, Santa Fe. No hacemos covers: hacemos reversiones. Tomamos los clásicos del rock nacional, los desarmamos pista por pista y los volvemos a armar con nuestro sonido, para que los temas que todos cantan suenen como nunca los escuchaste. Fiestas, bares, eventos, casamientos y festivales.",
