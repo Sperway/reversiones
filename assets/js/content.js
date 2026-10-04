@@ -130,7 +130,7 @@ window.REVERSIONES = {
      Pestaña "Videos": Link | Título | Lugar | Destacado  (Destacado: "sí" en el que va grande)
      Pestaña "Datos": Dato | Número  (los contadores de "La banda"; ej: Shows en vivo | 150+)
      La web la lee cada vez que alguien entra. */
-  planilla: "",
+  planilla: "https://docs.google.com/spreadsheets/d/1_ZC-CZp4yII6u5gl4oT4QfQkSg_eCehF/edit?usp=sharing",
 
   /* ---------- FECHAS (respaldo) ----------
      Se usan solo si no hay planilla o si la planilla no se puede leer.
