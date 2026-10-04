@@ -40,9 +40,10 @@
 
   /* ---------------- Afiche ---------------- */
   $("#presenta").textContent = EV.presenta || "";
-  $("#titulo").textContent = EV.titulo || "Fito Páez";
+  const NOMBRE = EV.titulo || "Todo Fito";
+  $("#titulo").textContent = NOMBRE;
   $("#bajada").textContent = EV.bajada || "";
-  document.title = `Homenaje a ${EV.titulo || "Fito Páez"} · Reversiones`;
+  document.title = `${NOMBRE} · Homenaje a ${EV.homenaje || "Fito Páez"} · Reversiones`;
 
   if (hasDate) {
     $("#stampDay").textContent = d;
@@ -179,7 +180,7 @@
       })
       .join("");
   } else {
-    const link = waLink(`¡Hola Reversiones! Quiero entradas para el homenaje a ${EV.titulo || "Fito Páez"}. ¿Dónde las consigo?`);
+    const link = waLink(`¡Hola Reversiones! Quiero entradas para ${NOMBRE}. ¿Dónde las consigo?`);
     $("#puntos").innerHTML = `
       <article class="ticket ticket--empty reveal">
         <div class="ticket__main">
@@ -205,7 +206,7 @@
       </${tag}>`;
   });
   if (!isDone) {
-    const link = waLink(`¡Hola Reversiones! Me interesa sumarme como sponsor del homenaje a ${EV.titulo || "Fito Páez"}.`);
+    const link = waLink(`¡Hola Reversiones! Me interesa sumarme como sponsor de ${NOMBRE}.`);
     sponsorCards.push(`
       <${link ? "a" : "div"} class="sponsor sponsor--cta reveal"${link ? ` href="${link}" target="_blank" rel="noopener"` : ""}>
         <b>¿Querés sumarte?</b>

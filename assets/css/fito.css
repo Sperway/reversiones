@@ -206,7 +206,7 @@ a {
 .stamp {
   position: absolute;
   top: 5%;
-  left: max(4%, calc((100% - 1120px) / 2));
+  left: max(3%, calc((100% - 1300px) / 2));
   width: clamp(110px, 14vw, 160px);
   aspect-ratio: 1;
   border-radius: 50%;

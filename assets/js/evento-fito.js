@@ -9,8 +9,9 @@
 
 window.EVENTO_FITO = {
   presenta: "Reversiones presenta",
-  titulo: "Fito Páez",
-  bajada: "Un homenaje en vivo al rosarino que le puso piano al rock nacional",
+  titulo: "Todo Fito", // nombre del evento
+  homenaje: "Fito Páez", // a quién se homenajea
+  bajada: "Homenaje a Fito Páez · Un recorrido en vivo por las canciones del rosarino que le puso piano al rock nacional",
 
   fecha: "2026-10-11", // AAAA-MM-DD
   hora: "20:30", // vacío = "Hora a confirmar"
