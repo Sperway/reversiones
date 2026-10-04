@@ -16,7 +16,7 @@ window.REVERSIONES = {
       { valor: 150, sufijo: "+", label: "Shows en vivo" },
       { valor: 80, sufijo: "+", label: "Temas reversionados" },
       { valor: 10, sufijo: "", label: "Años de ruta" },
-      { valor: 6, sufijo: "", label: "Músicos en escena" }
+      { valor: 5, sufijo: "", label: "Músicos en escena" }
     ]
   },
 
@@ -56,70 +56,59 @@ window.REVERSIONES = {
      foto: ruta a una imagen (ej: "assets/img/integrantes/juan.jpg") o "" para usar ilustración. */
   integrantes: [
     {
-      nombre: "Nombre Apellido",
+      nombre: "Javier Speratti",
       rol: "Voz principal",
       instrumento: "voz",
       fx: "reverb",
-      equipo: "Shure SM58",
+      equipo: "",
       rango: "100 Hz – 1,2 kHz",
       funcion: "Lleva la melodía y la letra. Va al centro y al frente de la mezcla.",
       toma: "",
-      foto: ""
+      foto: "assets/img/integrantes/javier-speratti.jpg"
     },
     {
-      nombre: "Nombre Apellido",
+      nombre: "Gustavo Mansilla",
       rol: "Guitarra líder",
       instrumento: "guitarra",
       fx: "overdrive",
-      equipo: "Stratocaster · Marshall",
+      equipo: "Les Paul Standard",
       rango: "80 Hz – 5 kHz",
       funcion: "Riffs y solos en los medios-agudos: le da filo y corta la mezcla.",
       toma: "",
-      foto: ""
+      foto: "assets/img/integrantes/gustavo-mansilla.jpg"
     },
     {
-      nombre: "Nombre Apellido",
-      rol: "Guitarra rítmica / Coros",
-      instrumento: "guitarra",
-      fx: "chorus",
-      equipo: "Telecaster · Fender",
-      rango: "80 Hz – 5 kHz",
-      funcion: "Colchón de acordes abierto en estéreo: rellena los costados de la mezcla.",
-      toma: "",
-      foto: ""
-    },
-    {
-      nombre: "Nombre Apellido",
+      nombre: "Fernando Fabro",
       rol: "Bajo",
       instrumento: "bajo",
       fx: "lowend",
-      equipo: "Jazz Bass · Ampeg",
+      equipo: "Squier Jazz Bass",
       rango: "40 Hz – 400 Hz",
       funcion: "Une el bombo con la armonía: es el piso de graves que se siente en el pecho.",
       toma: "",
-      foto: ""
+      foto: "assets/img/integrantes/fernando-fabro.jpg"
     },
     {
-      nombre: "Nombre Apellido",
+      nombre: "Sebastián Micelli",
       rol: "Batería",
       instrumento: "bateria",
       fx: "thunder",
-      equipo: "Pearl · Zildjian",
+      equipo: "",
       rango: "40 Hz – 16 kHz",
       funcion: "Marca el pulso: bombo en los graves, redoblante en los medios, platos arriba.",
       toma: "",
-      foto: ""
+      foto: "assets/img/integrantes/sebastian-micelli.jpg"
     },
     {
-      nombre: "Nombre Apellido",
-      rol: "Teclados / Sintes",
+      nombre: "Fernando Cugno",
+      rol: "Teclados",
       instrumento: "teclados",
       fx: "synth",
-      equipo: "Nord · Korg",
+      equipo: "Korg Kross",
       rango: "30 Hz – 8 kHz",
       funcion: "Pianos, pads y sintes: las texturas que cambian el color de cada reversión.",
       toma: "",
-      foto: ""
+      foto: "assets/img/integrantes/fernando-cugno.jpg"
     }
   ],
 
@@ -173,10 +162,10 @@ window.REVERSIONES = {
     },
     {
       nombre: "Eléctrico Full Band",
-      codigo: "FB-06",
+      codigo: "FB-05",
       duracion: "2 sets de 60 min",
       ideal: "Fiestas, casamientos, eventos corporativos",
-      incluye: ["6 músicos", "Backline completo", "Sonido e iluminación opcional", "Setlist a medida"],
+      incluye: ["5 músicos", "Backline completo", "Sonido e iluminación opcional", "Setlist a medida"],
       destacado: true
     },
     {

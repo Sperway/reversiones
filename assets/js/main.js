@@ -679,12 +679,16 @@
   const gigRow = (g, i, isPast) => {
     const tickets = safeUrl(g.entradas);
     const action = isPast
-      ? `<span class="gig__tag">TOCADO ✓</span>`
+      ? g.link
+        ? `<a class="btn btn--small btn--ghost" href="${esc(g.link)}">Así se vivió</a>`
+        : `<span class="gig__tag">TOCADO ✓</span>`
+      : g.link
+      ? `<a class="btn btn--small btn--primary" href="${esc(g.link)}">Ver evento</a>`
       : tickets
       ? `<a class="btn btn--small btn--primary" href="${esc(tickets)}" target="_blank" rel="noopener">Entradas</a>`
       : `<span class="gig__tag">${esc(g.estado || "Entrada en puerta")}</span>`;
     return `
-      <article class="gig reveal" style="transition-delay:${i * 60}ms">
+      <article class="gig reveal${g.especial ? " gig--special" : ""}" style="transition-delay:${i * 60}ms">
         <div class="gig__date">
           <span class="gig__dow">${DIAS[g.date.getDay()]}</span>
           <b>${String(g.date.getDate()).padStart(2, "0")}</b>
@@ -692,8 +696,9 @@
         </div>
         <div class="gig__steps" aria-hidden="true">${Array.from({ length: 8 }, () => "<i></i>").join("")}</div>
         <div class="gig__info">
-          <h3>${esc(g.lugar)}</h3>
-          <p>${esc(g.ciudad)}${g.hora ? ` · ${esc(g.hora)} hs` : ""}</p>
+          ${g.especial ? `<span class="gig__badge">★ Evento especial</span>` : ""}
+          <h3>${esc(g.nombre || g.lugar)}</h3>
+          <p>${esc([g.nombre ? g.lugar : "", g.ciudad].filter(Boolean).join(" · "))}${g.hora ? ` · ${g.horaLabel || ""}${esc(g.hora)} hs` : ""}${g.precio && !isPast ? ` · ${esc(g.precio)}` : ""}</p>
         </div>
         <div class="gig__action">${action}</div>
       </article>`;
@@ -730,8 +735,35 @@
       </div>`;
   }
   let countdownTimer = null;
+  // El evento especial (evento-fito.js) entra solo en la lista de fechas
+  function eventoEspecial() {
+    const ev = window.EVENTO_FITO;
+    if (!ev || !ev.fecha) return null;
+    return {
+      fecha: ev.fecha,
+      hora: ev.hora || ev.apertura || "",
+      horaLabel: !ev.hora && ev.apertura ? "Puertas " : "",
+      nombre: ev.titulo,
+      lugar: ev.lugar,
+      ciudad: ev.ciudad,
+      precio: ev.precio,
+      link: "eventos/fito-paez/",
+      especial: true
+    };
+  }
+
   function renderFechas(list) {
     const now = new Date();
+    const extra = eventoEspecial();
+    if (extra) {
+      // si la banda ya lo cargó en la planilla para ese día, se reemplaza por la versión destacada
+      const d = parseGig(extra);
+      list = (list || []).filter((g) => {
+        const p = parseGig(g);
+        return !(p && d && p.date.toDateString() === d.date.toDateString());
+      });
+      list = list.concat(extra);
+    }
     const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const gigs = (list || []).map(parseGig).filter(Boolean);
     const upcoming = gigs.filter((g) => g.date >= startOfToday).sort((a, b) => a.date - b.date);
@@ -746,7 +778,7 @@
     const nextGig = upcoming.find((g) => g.date > now);
     $("#countdown").hidden = !nextGig;
     if (nextGig) {
-      $("#cdVenue").textContent = [nextGig.lugar, nextGig.ciudad].filter(Boolean).join(" · ");
+      $("#cdVenue").textContent = [nextGig.nombre, nextGig.lugar, nextGig.ciudad].filter(Boolean).join(" · ");
       const pad = (n) => String(n).padStart(2, "0");
       const tick = () => {
         const s = Math.floor(Math.max(0, nextGig.date - new Date()) / 1000);
