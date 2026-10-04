@@ -64,7 +64,7 @@ window.REVERSIONES = {
       equipo: "",
       rango: "100 Hz – 1,2 kHz",
       funcion: "Lleva la melodía y la letra. Va al centro y al frente de la mezcla.",
-      toma: "",
+      toma: "assets/audio/integrantes/voz.mp3",
       foto: "assets/img/integrantes/javier-speratti.jpg"
     },
     {
@@ -75,7 +75,7 @@ window.REVERSIONES = {
       equipo: "Les Paul Standard",
       rango: "80 Hz – 5 kHz",
       funcion: "Riffs y solos en los medios-agudos: le da filo y corta la mezcla.",
-      toma: "",
+      toma: "assets/audio/integrantes/guitarra.mp3",
       foto: "assets/img/integrantes/gustavo-mansilla.jpg"
     },
     {
@@ -86,7 +86,7 @@ window.REVERSIONES = {
       equipo: "Squier Jazz Bass",
       rango: "40 Hz – 400 Hz",
       funcion: "Une el bombo con la armonía: es el piso de graves que se siente en el pecho.",
-      toma: "",
+      toma: "assets/audio/integrantes/bajo.mp3",
       foto: "assets/img/integrantes/fernando-fabro.jpg"
     },
     {
@@ -97,7 +97,7 @@ window.REVERSIONES = {
       equipo: "",
       rango: "40 Hz – 16 kHz",
       funcion: "Marca el pulso: bombo en los graves, redoblante en los medios, platos arriba.",
-      toma: "",
+      toma: "assets/audio/integrantes/bateria.mp3",
       foto: "assets/img/integrantes/sebastian-micelli.jpg"
     },
     {
@@ -108,7 +108,7 @@ window.REVERSIONES = {
       equipo: "Korg Kross",
       rango: "30 Hz – 8 kHz",
       funcion: "Pianos, pads y sintes: las texturas que cambian el color de cada reversión.",
-      toma: "",
+      toma: "assets/audio/integrantes/teclados.mp3",
       foto: "assets/img/integrantes/fernando-cugno.jpg"
     }
   ],
