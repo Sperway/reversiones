@@ -9,12 +9,12 @@ Es un sitio **estático** (HTML + CSS + JS, sin build): se puede publicar gratis
 | Canal | Sección | Qué hace |
 |---|---|---|
 | Hero | Inicio | Analizador de espectro + osciloscopio + VU meters animados. El botón **Probar sonido** reproduce un groove de rock sintetizado en vivo (Web Audio API) que mueve todas las animaciones. |
-| CH1 | La banda | Descripción, tocadiscos con perilla de pitch y contadores LCD. |
+| CH1 | La banda | Descripción, contadores LCD y **tocadiscos funcional**: el vinilo y START/STOP reproducen el tema de la banda, el disco gira solo mientras suena y el PITCH cambia la velocidad real ±8% (como un vinilo, también cambia el tono). |
 | CH2 | Integrantes | Cada músico es un **pedal de efecto real** (Web Audio): al pisarlo suena su instrumento con el efecto y al volver a pisarlo, en bypass. Las 3 perillas controlan parámetros reales del efecto. Cada pedal muestra su ficha "modo audio": canal, rango de frecuencias y qué aporta a la mezcla. |
 | CH3 | Videos | Monitor con el video destacado y lista de cassettes. Usa YouTube (modo privacidad mejorada). |
 | CH4 | Fechas | Secuenciador con las próximas fechas, cuenta regresiva al próximo show y shows anteriores (se separan solos según la fecha). Sin fechas cargadas, muestra el secuenciador en *standby* "esperando señal". |
 | CH5 | Concepto | "¿Qué es una reversión?" explicado como una cadena de señal de audio (IN → SPLIT → FX → OUT). |
-| REC | Contratar | Formatos de show (racks) + formulario "booking console" que envía la consulta por **WhatsApp** o **email**. |
+| REC | Contratar | Formatos de show (racks), formulario "booking console" que envía la consulta por **WhatsApp** o **email**, y **EQ master real** de 5 bandas (60 Hz–12 kHz, ±12 dB) que ecualiza todo lo que suena en la web. |
 
 ## Cómo actualizar el contenido
 

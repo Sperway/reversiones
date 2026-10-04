@@ -362,12 +362,36 @@
     });
   }
 
-  // La perilla del tocadiscos cambia la velocidad del vinilo
+  /* ---------------- TOCADISCOS ----------------
+     El vinilo y START/STOP reproducen el tema de la banda (o el loop si no hay
+     tema). El PITCH cambia la velocidad real ±8%, como una bandeja Technics:
+     acelerar también sube el tono. El disco gira solo mientras suena. */
   const vinyl = $("#vinyl");
   const pitchKnob = $(".turntable__knob");
+  const pitchOut = $("#pitchOut");
+  const BASE_SPIN = 1.8; // segundos por vuelta a 33⅓ RPM
+  if (hasTrack && tema.titulo) $("#vinylTitle").textContent = tema.titulo;
   initKnob(pitchKnob);
-  pitchKnob.addEventListener("knob", (e) => vinyl.style.setProperty("--spin", (3.2 - e.detail / 50).toFixed(2) + "s"));
-  pitchKnob.dispatchEvent(new CustomEvent("knob", { detail: +pitchKnob.getAttribute("aria-valuenow") }));
+  pitchKnob.addEventListener("knob", (e) => {
+    let pct = ((e.detail - 50) / 50) * 8;
+    if (Math.abs(pct) < 0.35) pct = 0; // punto central con "detent", como el fader de pitch real
+    const rate = 1 + pct / 100;
+    if (Audio) Audio.setRate(rate);
+    vinyl.style.setProperty("--spin", (BASE_SPIN / rate).toFixed(3) + "s");
+    pitchOut.textContent = pct === 0 ? "±0.0%" : (pct > 0 ? "+" : "") + pct.toFixed(1) + "%";
+    pitchOut.classList.toggle("is-off-center", pct !== 0);
+  });
+  pitchKnob.dispatchEvent(new CustomEvent("knob", { detail: 50 }));
+  if (Audio) {
+    vinyl.addEventListener("click", () => Audio.toggle());
+    $("#vinylStart").addEventListener("click", () => Audio.toggle());
+    Audio.on((type, on) => {
+      if (type !== "state") return;
+      vinyl.setAttribute("aria-pressed", String(on));
+      vinyl.setAttribute("aria-label", on ? "Pausar el tocadiscos" : "Reproducir el tema en el tocadiscos");
+      $("#vinylStart .led").classList.toggle("led--on", on);
+    });
+  }
 
   /* ---------------- INTEGRANTES (pedales) ---------------- */
   const ICONS = {
@@ -786,6 +810,30 @@
     status.className = "console__status is-ok";
     Audio && Audio.init() && Audio.playInstrument("guitarra");
   });
+
+  /* ---------------- EQ MASTER ----------------
+     5 bandas reales sobre todo lo que suena en la web (tema, loop y pedales). */
+  const eqInputs = $$("#eq input[type=range]");
+  const eqOutputs = $$("#eq output");
+  const eqPlay = $("#eqPlay");
+  const setBand = (i, v) => {
+    eqInputs[i].value = v;
+    eqOutputs[i].textContent = (v > 0 ? "+" : "") + v;
+    eqOutputs[i].classList.toggle("is-boost", v > 0);
+    eqOutputs[i].classList.toggle("is-cut", v < 0);
+    if (Audio) Audio.setEQ(i, +v);
+  };
+  eqInputs.forEach((inp, i) => inp.addEventListener("input", () => setBand(i, +inp.value)));
+  $("#eqFlat").addEventListener("click", () => eqInputs.forEach((_, i) => setBand(i, 0)));
+  if (Audio) {
+    eqPlay.addEventListener("click", () => Audio.toggle());
+    Audio.on((type, on) => {
+      if (type !== "state") return;
+      eqPlay.setAttribute("aria-pressed", String(on));
+      eqPlay.textContent = on ? "❚❚ Pausar" : "▶ Escuchar";
+      $("#eqLed").classList.toggle("led--on", on);
+    });
+  } else eqPlay.hidden = true;
 
   // Contacto directo + redes
   if (waNum) {

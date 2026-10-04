@@ -24,6 +24,31 @@
 
   const midi = (n) => 440 * Math.pow(2, (n - 69) / 12);
 
+  const EQ_BANDS = [
+    ["lowshelf", 60],
+    ["peaking", 250],
+    ["peaking", 1000],
+    ["peaking", 4000],
+    ["highshelf", 12000]
+  ];
+  A.eqBands = EQ_BANDS.map((b) => b[1]);
+  A._eqGains = EQ_BANDS.map(() => 0);
+
+  // Ganancia de una banda del EQ master, en dB (-12 a +12)
+  A.setEQ = function (i, db) {
+    A._eqGains[i] = db;
+    if (A.eq) A.eq[i].gain.setTargetAtTime(db, A.ctx.currentTime, 0.02);
+  };
+
+  /* Velocidad tipo tocadiscos (pitch): 1 = normal. Como en un vinilo,
+     acelerar también sube el tono (no se preserva la afinación). */
+  A.rate = 1;
+  A.setRate = function (r) {
+    A.rate = r;
+    A.bpm = 118 * r;
+    if (A._audioEl) A._audioEl.playbackRate = r;
+  };
+
   A.init = function () {
     if (A.ctx) {
       if (A.ctx.state === "suspended") A.ctx.resume();
@@ -55,11 +80,22 @@
     const aR = ctx.createAnalyser();
     aL.fftSize = aR.fftSize = 512;
 
+    // EQ master de 5 bandas (el ecualizador de la sección Contratar)
+    A.eq = EQ_BANDS.map(([type, freq], i) => {
+      const f = ctx.createBiquadFilter();
+      f.type = type;
+      f.frequency.value = freq;
+      if (type === "peaking") f.Q.value = 1.1;
+      f.gain.value = A._eqGains[i];
+      return f;
+    });
+    const eqOut = A.eq.reduce((prev, f) => (prev.connect(f), f), out);
+
     bus.connect(comp);
     comp.connect(out);
-    out.connect(analyser);
+    eqOut.connect(analyser);
     analyser.connect(ctx.destination);
-    out.connect(splitter);
+    eqOut.connect(splitter);
     splitter.connect(aL, 0);
     splitter.connect(aR, 1);
 
@@ -368,6 +404,8 @@
     const el = new Audio();
     el.src = A.track;
     el.preload = "metadata";
+    el.preservesPitch = el.mozPreservesPitch = el.webkitPreservesPitch = false;
+    el.playbackRate = A.rate;
     el.addEventListener("ended", () => {
       el.currentTime = 0;
       A.stop();
