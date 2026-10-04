@@ -711,6 +711,213 @@ a {
   color: var(--paper);
 }
 
+/* ---------- Invitados sorpresa: raspaditas ---------- */
+.scratch-progress {
+  margin: 16px 0 0;
+  font-family: var(--hand);
+  font-size: 26px;
+  color: var(--amber);
+}
+.scratch-progress b {
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: 30px;
+  color: var(--paper);
+}
+.scratchers {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 300px));
+  justify-content: center;
+  gap: 34px;
+}
+.scratcher {
+  position: relative;
+  padding: 14px 14px 18px;
+  border-radius: 16px;
+  background: var(--paper) var(--grain);
+  color: var(--ink);
+  box-shadow: 8px 8px 0 var(--magenta);
+  rotate: var(--tilt, 0deg);
+  transition: rotate 0.3s var(--ease), box-shadow 0.3s, opacity 0.8s var(--ease), translate 0.8s var(--ease);
+}
+.scratcher:hover {
+  rotate: 0deg;
+}
+.scratcher.is-revealed {
+  box-shadow: 8px 8px 0 var(--amber);
+}
+.scratcher__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.scratcher__head b {
+  font-family: var(--display);
+  font-size: 26px;
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--magenta);
+}
+.scratcher__media {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 10px;
+  overflow: visible;
+}
+.scratcher__prize {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 10px;
+  background: var(--ink);
+}
+.scratcher__prize img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.scratcher__initial {
+  font-family: var(--display);
+  font-size: 140px;
+  line-height: 1;
+  background: var(--tecknicolor);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.scratcher__foil {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 10px;
+  cursor: grab;
+  touch-action: none;
+  transition: opacity 0.5s;
+  z-index: 2;
+}
+.scratcher.is-revealed .scratcher__foil {
+  opacity: 0;
+  pointer-events: none;
+}
+.scratcher__lock {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  border-radius: 10px;
+  text-align: center;
+  color: var(--paper);
+  background:
+    repeating-linear-gradient(45deg, rgba(243, 233, 214, 0.06) 0 12px, transparent 12px 24px),
+    var(--ink-2);
+}
+.scratcher__lock span {
+  font-size: 40px;
+  filter: grayscale(0.3);
+}
+.scratcher__lock b {
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: 26px;
+}
+.scratcher__lock small {
+  font-family: var(--hand);
+  font-size: 24px;
+  color: var(--amber);
+}
+.scratcher__lock em {
+  margin-top: 6px;
+  font-style: normal;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.1em;
+  font-size: 14px;
+  opacity: 0.75;
+}
+.scratcher__body {
+  padding-top: 12px;
+  text-align: center;
+  min-height: 96px;
+}
+.scratcher__clue {
+  margin: 0;
+  font-family: var(--hand);
+  font-size: 23px;
+  line-height: 1.15;
+  color: var(--ink-2);
+}
+.scratcher__name {
+  margin: 6px 0 0;
+  display: flex;
+  flex-direction: column;
+}
+.scratcher__name b {
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: 26px;
+  line-height: 1.1;
+}
+.scratcher__name b:empty,
+.scratcher__name span:empty {
+  display: none;
+}
+.scratcher__name span {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--magenta);
+}
+.scratcher.is-revealed .scratcher__name {
+  animation: pop 0.5s var(--ease);
+}
+@keyframes pop {
+  from {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+}
+.scratcher__btn {
+  margin-top: 10px;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  font-size: 13px;
+  text-decoration: underline;
+  cursor: pointer;
+}
+/* mariposas que salen al descubrir */
+.bf--burst {
+  left: 50%;
+  top: 50%;
+  z-index: 4;
+  pointer-events: none;
+  animation: burst 1.5s var(--ease) forwards;
+}
+@keyframes burst {
+  from {
+    translate: -50% -50%;
+    opacity: 1;
+  }
+  to {
+    translate: calc(-50% + var(--x)) calc(-50% + var(--y));
+    opacity: 0;
+  }
+}
+
 /* ---------- En escena: polaroids ---------- */
 .polaroids {
   display: grid;

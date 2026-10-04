@@ -56,6 +56,18 @@ window.EVENTO_FITO = {
     { nombre: "Complejo Atenas", logo: "", url: "", tipo: "" }
   ],
 
+  /* ---------- INVITADOS ESPECIALES (juego de raspadita) ----------
+     pista: se ve antes de raspar · desbloquea: "AAAA-MM-DD" (vacío = ya se puede raspar)
+     secreto: nombre, rol y foto CODIFICADOS para que no se lean a simple vista.
+     Para generar uno, en la consola del navegador (en la página del evento):
+       codificarInvitado({ nombre: "Nombre", rol: "Voz", foto: "assets/img/invitados/x.jpg" })
+     Después del evento se muestran todos destapados. */
+  invitados: [
+    { pista: "Una voz que conocés de memoria", desbloquea: "", secreto: "=0nIiAiOi8GdvZmIgwiI69mViAiOiw2byJCIsISMgwWYpNWZwNXZg8GZhRXa25WSiAiOiUmci12buJye" },
+    { pista: "Seis cuerdas y mucha calle", desbloquea: "2026-10-07", secreto: "==QfiICI6Iyb09mZiACLiEmcyFGdpV3RiAiOiw2byJCIsIiMgwWYpNWZwNXZg8GZhRXa25WSiAiOiUmci12buJye" },
+    { pista: "El que nunca falta en las peñas", desbloquea: "2026-10-09", secreto: "==QfiICI6Iyb09mZiACLiM3bkFGbjVGViAiOiw2byJCIsIyMgwWYpNWZwNXZg8GZhRXa25WSiAiOiUmci12buJye" }
+  ],
+
   /* ---------- DESPUÉS DEL EVENTO ----------
      Fotos y videos de cómo se vivió (se muestran cuando ya pasó la fecha). */
   recuerdo: {
