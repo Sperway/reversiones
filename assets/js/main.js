@@ -313,15 +313,6 @@
   /* ---------------- BANDA ---------------- */
   $("#bandDesc").textContent = banda.descripcion || "";
   const statsEl = $("#stats");
-  statsEl.innerHTML = (banda.stats || [])
-    .map(
-      (s) => `
-      <div class="stat reveal">
-        <div class="stat__lcd"><span class="stat__ghost">888</span><b data-count="${Number(s.valor) || 0}">0</b><em>${esc(s.sufijo)}</em></div>
-        <div class="stat__label">${esc(s.label)}</div>
-      </div>`
-    )
-    .join("");
   const countObs = new IntersectionObserver(
     (entries) =>
       entries.forEach((e) => {
@@ -341,7 +332,21 @@
       }),
     { threshold: 0.5 }
   );
-  $$(".stat", statsEl).forEach((s) => countObs.observe(s));
+  // Contadores LCD (de content.js o de la pestaña "Datos" de la planilla)
+  function renderStats(list) {
+    statsEl.innerHTML = (list || [])
+      .map(
+        (s) => `
+      <div class="stat reveal">
+        <div class="stat__lcd"><span class="stat__ghost">888</span><b data-count="${Number(s.valor) || 0}">0</b><em>${esc(s.sufijo)}</em></div>
+        <div class="stat__label">${esc(s.label)}</div>
+      </div>`
+      )
+      .join("");
+    $$(".stat", statsEl).forEach((st) => countObs.observe(st));
+    observeReveal(statsEl);
+  }
+  renderStats(banda.stats);
 
   /* ---------------- KNOBS (arrastrables) ---------------- */
   function initKnob(el) {
@@ -840,6 +845,7 @@
       .filter((g) => g[required]);
   }
   const FECHA_COLS = { fecha: /^fecha/, hora: /^hora/, lugar: /^lugar/, ciudad: /^(ciudad|localidad)/, entradas: /^(entrada|link)/, estado: /^(estado|etiqueta|nota)/ };
+  const DATO_COLS = { label: /^dato/, numero: /^(numero|valor|cantidad)/ };
   const VIDEO_COLS = { url: /^(link|url|video|youtube)/, titulo: /^titulo/, lugar: /^(lugar|descripcion)/, destacado: /^destacad/ };
 
   const planilla = DATA.planilla || DATA.fechasPlanilla;
@@ -867,6 +873,18 @@
         if (!fromSheet.length) return;
         const defaults = (DATA.videos || []).map((v) => (fromSheet.some((f) => f.destacado) ? { ...v, destacado: false } : v));
         renderVideos(fromSheet.concat(defaults));
+      })
+      .catch(() => {});
+    // Pestaña "Datos": los contadores LCD ("150+" -> 150 con sufijo "+")
+    loadSheet("Datos", DATO_COLS, "label")
+      .then((rows) => {
+        const stats = rows
+          .map((r) => {
+            const m = String(r.numero).trim().match(/^([^\d]*)([\d.,]+)(.*)$/);
+            return m ? { label: r.label, valor: parseInt(m[2].replace(/[.,]/g, ""), 10), sufijo: (m[1] + m[3]).trim() } : null;
+          })
+          .filter(Boolean);
+        if (stats.length) renderStats(stats);
       })
       .catch(() => {});
   } else renderFechas(DATA.fechas);
