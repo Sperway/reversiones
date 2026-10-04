@@ -281,6 +281,33 @@
   const mqItems = (DATA.cinta || ["Rock nacional", "Reversiones", "En vivo"]).map((a) => `<span>${esc(a)}</span><i>✦</i>`).join("");
   mq.innerHTML = mqItems + mqItems;
 
+  /* ---------------- EVENTO ESPECIAL (banner a la subpágina) ---------------- */
+  const EV = window.EVENTO_FITO;
+  if (EV && EV.fecha) {
+    const MESES_LARGOS = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
+    const DIAS_LARGOS = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
+    const [ey, em, ed] = EV.fecha.split("-").map(Number);
+    const evDate = new Date(ey, em - 1, ed);
+    const evDone = new Date() > new Date(ey, em - 1, ed + 1, 6);
+    $("#eventoEspecial").hidden = false;
+    $("#navEvent").hidden = false;
+    $("#ebDay").textContent = ed;
+    $("#ebMonth").textContent = MESES_LARGOS[em - 1].slice(0, 3);
+    $("#ebTitle").textContent = "Homenaje a " + (EV.titulo || "Fito Páez");
+    $("#ebInfo").textContent = [
+      `${DIAS_LARGOS[evDate.getDay()]} ${ed} de ${MESES_LARGOS[em - 1]}`,
+      EV.hora ? EV.hora + " hs" : "",
+      EV.lugar || "",
+      EV.ciudad || ""
+    ]
+      .filter(Boolean)
+      .join(" · ");
+    if (evDone) {
+      $("#ebKicker").textContent = "Así se vivió";
+      $("#ebCta").textContent = "Ver fotos y videos →";
+    }
+  }
+
   /* ---------------- BANDA ---------------- */
   $("#bandDesc").textContent = banda.descripcion || "";
   const statsEl = $("#stats");

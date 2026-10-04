@@ -72,6 +72,13 @@ Subí las fotos a `assets/img/integrantes/` y poné la ruta en el campo `foto` (
 - Links de redes sociales y de los videos de YouTube.
 - Opcional: endpoint de [Formspree](https://formspree.io) en `contacto.formspree` para recibir el formulario directo por mail.
 
+## Evento especial: homenaje a Fito Páez
+Subpágina en **`/eventos/fito-paez/`** con estética propia (afiche de los 90, colores "tecknicolor", mariposas, polaroids y un piano tocable con mouse, dedo o teclado). La portada muestra un banner y un link en el menú hacia ella.
+
+Todos los datos están en **`assets/js/evento-fito.js`**: fecha, hora, sala, precio, descripción, cronograma, puntos de venta físicos (con botón "Cómo llegar"), sponsors (logo, link y tipo; "Sponsor principal" se muestra más grande) y el bloque `recuerdo`. Los integrantes se toman de `content.js`.
+
+**Después del evento** la página cambia sola a modo recuerdo: oculta la venta de entradas, muestra el mensaje de agradecimiento y las fotos y videos cargados en `recuerdo`, y el banner de la portada pasa a decir "Así se vivió".
+
 ## Ver localmente
 
 ```bash

@@ -9,6 +9,9 @@
 @font-face { font-family: "Inter"; font-style: normal; font-weight: 400 700; font-display: swap; src: url("../fonts/inter.woff2") format("woff2"); }
 @font-face { font-family: "Share Tech Mono"; font-style: normal; font-weight: 400; font-display: swap; src: url("../fonts/share-tech-mono.woff2") format("woff2"); }
 
+@font-face { font-family: "Abril Fatface"; font-style: normal; font-weight: 400; font-display: swap; src: url("../fonts/abril-fatface.woff2") format("woff2"); }
+@font-face { font-family: "Caveat"; font-style: normal; font-weight: 600; font-display: swap; src: url("../fonts/caveat.woff2") format("woff2"); }
+
 :root {
   --bg: #0a0a0c;
   --bg-2: #111216;
@@ -897,6 +900,115 @@ button {
 }
 .marquee:hover .marquee__track {
   animation-play-state: paused;
+}
+
+/* ---------- BANNER DEL EVENTO ESPECIAL (estilo de la subpágina) ---------- */
+.event-banner-wrap {
+  padding: 70px 0 0;
+}
+.event-banner {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 26px;
+  padding: 24px 30px;
+  border-radius: 18px;
+  text-decoration: none;
+  color: #1d1420;
+  background:
+    repeating-conic-gradient(from 0deg at 0% 50%, rgba(255, 176, 0, 0.18) 0 5deg, transparent 5deg 10deg),
+    #f3e9d6;
+  border: 3px solid #1d1420;
+  box-shadow: 8px 8px 0 #e8217c;
+  overflow: hidden;
+  transition: translate 0.2s, box-shadow 0.2s, opacity 0.8s var(--ease);
+}
+.event-banner:hover {
+  translate: -3px -3px;
+  box-shadow: 11px 11px 0 #14b8c9;
+}
+.event-banner__stamp {
+  display: grid;
+  place-content: center;
+  width: 92px;
+  height: 92px;
+  border-radius: 50%;
+  background: #d7263d;
+  color: #f3e9d6;
+  text-align: center;
+  rotate: -8deg;
+  border: 3px dashed rgba(243, 233, 214, 0.7);
+  box-shadow: 0 0 0 4px #d7263d;
+}
+.event-banner__stamp b {
+  font-family: "Abril Fatface", Georgia, serif;
+  font-weight: 400;
+  font-size: 42px;
+  line-height: 0.9;
+}
+.event-banner__stamp small {
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+.event-banner__text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.event-banner__kicker {
+  font-family: "Caveat", cursive;
+  font-size: 24px;
+  color: #e8217c;
+  line-height: 1;
+}
+.event-banner__title {
+  font-family: "Abril Fatface", Georgia, serif;
+  font-size: clamp(30px, 4.4vw, 52px);
+  line-height: 1;
+  text-shadow: 0.04em 0.04em 0 #e8217c, 0.08em 0.08em 0 #14b8c9;
+  margin: 4px 0 8px;
+}
+.event-banner__info {
+  font-weight: 600;
+  color: #4a3a40;
+}
+.event-banner__cta {
+  padding: 12px 20px;
+  border-radius: 999px;
+  background: #1d1420;
+  color: #f3e9d6;
+  font-weight: 700;
+  white-space: nowrap;
+  box-shadow: 4px 4px 0 #ffb000;
+}
+.nav__menu .nav__event {
+  color: #ff5fa8;
+}
+.nav__menu .nav__event i {
+  color: #ff5fa8;
+  opacity: 1;
+  font-size: 12px;
+}
+@media (max-width: 760px) {
+  .event-banner {
+    grid-template-columns: auto 1fr;
+    padding: 20px;
+    gap: 16px;
+  }
+  .event-banner__stamp {
+    width: 70px;
+    height: 70px;
+  }
+  .event-banner__stamp b {
+    font-size: 32px;
+  }
+  .event-banner__cta {
+    grid-column: 1 / -1;
+    justify-self: start;
+  }
 }
 
 /* ---------- SECCIONES ---------- */

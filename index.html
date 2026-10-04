@@ -47,6 +47,7 @@
       <a href="#videos"><i>CH3</i>Videos</a>
       <a href="#fechas"><i>CH4</i>Fechas</a>
       <a href="#concepto"><i>CH5</i>Concepto</a>
+      <a href="eventos/fito-paez/" class="nav__event" id="navEvent" hidden><i>★</i>Fito Páez</a>
       <a href="#contratar" class="nav__cta"><i class="rec"></i>Contratar</a>
     </nav>
   </header>
@@ -91,6 +92,21 @@
 
     <!-- Cinta animada -->
     <div class="marquee" aria-hidden="true"><div class="marquee__track" id="marquee"></div></div>
+
+    <!-- ============ EVENTO ESPECIAL (banner) ============ -->
+    <section class="event-banner-wrap" id="eventoEspecial" hidden>
+      <div class="container">
+        <a class="event-banner reveal" href="eventos/fito-paez/" id="eventBanner">
+          <span class="event-banner__stamp" aria-hidden="true"><b id="ebDay"></b><small id="ebMonth"></small></span>
+          <span class="event-banner__text">
+            <span class="event-banner__kicker" id="ebKicker">Evento especial · Reversiones presenta</span>
+            <span class="event-banner__title" id="ebTitle"></span>
+            <span class="event-banner__info" id="ebInfo"></span>
+          </span>
+          <span class="event-banner__cta" id="ebCta">Ver el evento →</span>
+        </a>
+      </div>
+    </section>
 
     <!-- ============ BANDA ============ -->
     <section class="section" id="banda">
@@ -318,6 +334,7 @@
 
 
   <script src="assets/js/content.js"></script>
+  <script src="assets/js/evento-fito.js"></script>
   <script src="assets/js/audio.js"></script>
   <script src="assets/js/main.js"></script>
 </body>
