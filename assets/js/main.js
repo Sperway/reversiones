@@ -553,8 +553,7 @@
     if (m) return m[1];
     return /^[\w-]{11}$/.test(url) ? url : "";
   }
-  const videos = (DATA.videos || []).map((v) => ({ ...v, id: ytId(v.url) }));
-  const featIdx = Math.max(0, videos.findIndex((v) => v.destacado));
+  let videos = [];
   const featuredEl = $("#featuredVideo");
   const listEl = $("#videoList");
 
@@ -590,9 +589,15 @@
     $$(".tape", listEl).forEach((t) => t.classList.toggle("is-active", +t.dataset.i === i));
   }
 
-  listEl.innerHTML = videos
-    .map(
-      (v, i) => `
+  // Arma el monitor y la lista. Si hay videos con link, se ocultan los
+  // placeholders vacíos; los repetidos (mismo video) se muestran una vez.
+  function renderVideos(list) {
+    const seen = new Set();
+    videos = (list || []).map((v) => ({ ...v, id: ytId(v.url) }));
+    if (videos.some((v) => v.id)) videos = videos.filter((v) => v.id && !seen.has(v.id) && seen.add(v.id));
+    listEl.innerHTML = videos
+      .map(
+        (v, i) => `
       <button class="tape reveal" data-i="${i}" aria-label="Ver ${esc(v.titulo)}">
         <span class="tape__thumb">${v.id ? `<img src="https://i.ytimg.com/vi/${v.id}/mqdefault.jpg" alt="" loading="lazy">` : `<span class="tape__static"></span>`}</span>
         <span class="tape__body">
@@ -600,15 +605,18 @@
           <span class="tape__label"><b>${esc(v.titulo)}</b><small>${esc(v.lugar || "")}</small></span>
         </span>
       </button>`
-    )
-    .join("");
-  $$(".tape", listEl).forEach((t) =>
-    t.addEventListener("click", () => {
-      renderFeatured(+t.dataset.i, !!videos[+t.dataset.i].id);
-      if (innerWidth < 900) featuredEl.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "center" });
-    })
-  );
-  renderFeatured(featIdx, false);
+      )
+      .join("");
+    $$(".tape", listEl).forEach((t) =>
+      t.addEventListener("click", () => {
+        renderFeatured(+t.dataset.i, !!videos[+t.dataset.i].id);
+        if (innerWidth < 900) featuredEl.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "center" });
+      })
+    );
+    renderFeatured(Math.max(0, videos.findIndex((v) => v.destacado)), false);
+    observeReveal($("#videos"));
+  }
+  renderVideos(DATA.videos);
 
   /* ---------------- FECHAS ---------------- */
   const MESES = ["ENE", "FEB", "MAR", "ABR", "MAY", "JUN", "JUL", "AGO", "SEP", "OCT", "NOV", "DIC"];
@@ -725,17 +733,19 @@
   }
   $("#pastWrap").addEventListener("toggle", () => observeReveal($("#pastWrap")));
 
-  /* Fechas desde Google Sheets: la banda edita la planilla y la web la lee al
-     cargar. Acepta el link para compartir (".../spreadsheets/d/ID/edit...")
-     o el de "Publicar en la web". Si falla, usa las fechas de content.js. */
-  function sheetCsvUrl(url) {
+  /* ---------------- PLANILLA DE GOOGLE ----------------
+     La banda edita una planilla con dos pestañas, "Fechas" y "Videos", y la
+     web la lee al cargar. Acepta el link para compartir (".../d/ID/edit...")
+     o el de "Publicar en la web". Si falla, quedan los datos de content.js. */
+  function sheetCsvUrl(url, sheet) {
     const u = String(url || "").trim();
     if (!/^https:\/\/docs\.google\.com\/spreadsheets\//.test(u)) return "";
-    const gid = (u.match(/[#&?]gid=(\d+)/) || [])[1];
+    const tab = sheet ? "&sheet=" + encodeURIComponent(sheet) : "";
+    const gid = !sheet && (u.match(/[#&?]gid=(\d+)/) || [])[1];
     const pub = u.match(/^(https:\/\/docs\.google\.com\/spreadsheets\/d\/e\/[\w-]+)/);
-    if (pub) return `${pub[1]}/pub?output=csv${gid ? "&gid=" + gid : ""}`;
+    if (pub) return `${pub[1]}/pub?output=csv${tab}${gid ? "&gid=" + gid : ""}`;
     const id = (u.match(/\/d\/([\w-]+)/) || [])[1];
-    return id ? `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:csv${gid ? "&gid=" + gid : ""}` : "";
+    return id ? `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:csv${tab}${gid ? "&gid=" + gid : ""}` : "";
   }
   function parseCsv(text) {
     const rows = [];
@@ -756,27 +766,48 @@
     if (cell || row.length) row.push(cell), rows.push(row);
     return rows;
   }
-  // Encabezados de la planilla (sin importar mayúsculas ni tildes)
-  const COLS = { fecha: /^fecha/, hora: /^hora/, lugar: /^lugar/, ciudad: /^(ciudad|localidad)/, entradas: /^(entrada|link)/, estado: /^(estado|etiqueta|nota)/ };
-  function sheetToGigs(text) {
+  // Convierte el CSV en objetos según los encabezados (sin importar mayúsculas ni tildes)
+  function sheetRows(text, cols, required) {
     const [head, ...rows] = parseCsv(text);
     if (!head) return [];
     const norm = (h) => h.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
     const idx = {};
-    head.forEach((h, i) => Object.entries(COLS).forEach(([k, re]) => idx[k] == null && re.test(norm(h)) && (idx[k] = i)));
-    if (idx.fecha == null) throw new Error("La planilla no tiene columna Fecha");
+    head.forEach((h, i) => Object.entries(cols).forEach(([k, re]) => idx[k] == null && re.test(norm(h)) && (idx[k] = i)));
+    if (idx[required] == null) throw new Error("Falta la columna " + required);
     return rows
-      .map((r) => Object.fromEntries(Object.keys(COLS).map((k) => [k, idx[k] != null ? (r[idx[k]] || "").trim() : ""])))
-      .filter((g) => g.fecha);
+      .map((r) => Object.fromEntries(Object.keys(cols).map((k) => [k, idx[k] != null ? (r[idx[k]] || "").trim() : ""])))
+      .filter((g) => g[required]);
   }
+  const FECHA_COLS = { fecha: /^fecha/, hora: /^hora/, lugar: /^lugar/, ciudad: /^(ciudad|localidad)/, entradas: /^(entrada|link)/, estado: /^(estado|etiqueta|nota)/ };
+  const VIDEO_COLS = { url: /^(link|url|video|youtube)/, titulo: /^titulo/, lugar: /^(lugar|descripcion)/, destacado: /^destacad/ };
 
-  const sheetUrl = sheetCsvUrl(DATA.fechasPlanilla);
-  if (sheetUrl) {
-    $("#gigs").innerHTML = `<p class="gigs__loading">▸ Sincronizando fechas…</p>`;
-    fetch(sheetUrl, { cache: "no-store" })
+  const planilla = DATA.planilla || DATA.fechasPlanilla;
+  const loadSheet = (sheet, cols, required) => {
+    const url = sheetCsvUrl(planilla, sheet);
+    if (!url) return Promise.reject(new Error("Link de planilla inválido"));
+    return fetch(url, { cache: "no-store" })
       .then((r) => (r.ok ? r.text() : Promise.reject(r.status)))
-      .then((text) => renderFechas(sheetToGigs(text)))
+      .then((text) => sheetRows(text, cols, required));
+  };
+
+  if (sheetCsvUrl(planilla)) {
+    $("#gigs").innerHTML = `<p class="gigs__loading">▸ Sincronizando fechas…</p>`;
+    // Pestaña "Fechas"; si no existe con ese nombre, la primera pestaña
+    loadSheet("Fechas", FECHA_COLS, "fecha")
+      .catch(() => loadSheet(null, FECHA_COLS, "fecha"))
+      .then(renderFechas)
       .catch(() => renderFechas(DATA.fechas));
+    // Pestaña "Videos": primero los de la planilla, después los de content.js
+    loadSheet("Videos", VIDEO_COLS, "url")
+      .then((rows) => {
+        const fromSheet = rows
+          .filter((v) => ytId(v.url))
+          .map((v) => ({ ...v, destacado: /^(si|sí|x|true|1|yes)$/i.test(v.destacado) }));
+        if (!fromSheet.length) return;
+        const defaults = (DATA.videos || []).map((v) => (fromSheet.some((f) => f.destacado) ? { ...v, destacado: false } : v));
+        renderVideos(fromSheet.concat(defaults));
+      })
+      .catch(() => {});
   } else renderFechas(DATA.fechas);
 
   /* ---------------- CONCEPTO (cadena de señal) ---------------- */

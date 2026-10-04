@@ -2,7 +2,7 @@
    REVERSIONES · CONTENIDO DEL SITIO
    ---------------------------------------------------------------------
    Contenido de la web: textos, integrantes, videos, tema, contacto.
-   Las FECHAS se cargan desde una planilla de Google (ver "fechasPlanilla").
+   Las FECHAS y los VIDEOS nuevos se cargan desde una planilla de Google (ver "planilla").
    ===================================================================== */
 
 window.REVERSIONES = {
@@ -123,9 +123,10 @@ window.REVERSIONES = {
     }
   ],
 
-  /* ---------- VIDEOS ----------
-     url: link de YouTube (watch, youtu.be o shorts). El primero marcado
-     como destacado: true se muestra en grande. */
+  /* ---------- VIDEOS POR DEFECTO ----------
+     Se muestran siempre, después de los que la banda cargue en la planilla.
+     url: link de YouTube (watch, youtu.be, shorts o live). El marcado como
+     destacado: true se muestra en grande (si la planilla no marca otro). */
   videos: [
     { titulo: "En vivo · Reversiones", url: "", lugar: "Firmat, Santa Fe", destacado: true },
     { titulo: "Sesión en sala", url: "", lugar: "Ensayo abierto" },
@@ -133,11 +134,12 @@ window.REVERSIONES = {
     { titulo: "Show en bar", url: "", lugar: "Sur de Santa Fe" }
   ],
 
-  /* ---------- FECHAS DESDE GOOGLE SHEETS ----------
-     Link de la planilla de fechas (compartida como "Cualquier persona con el
-     enlace: Lector"). Columnas: Fecha | Hora | Lugar | Ciudad | Entradas | Estado
-     Fecha en formato DD/MM/AAAA. La web la lee cada vez que alguien entra. */
-  fechasPlanilla: "",
+  /* ---------- PLANILLA DE GOOGLE (fechas y videos) ----------
+     Link de la planilla compartida como "Cualquier persona con el enlace: Lector".
+     Pestaña "Fechas": Fecha | Hora | Lugar | Ciudad | Entradas | Estado  (fecha DD/MM/AAAA)
+     Pestaña "Videos": Link | Título | Lugar | Destacado  (Destacado: "sí" en el que va grande)
+     La web la lee cada vez que alguien entra. */
+  planilla: "",
 
   /* ---------- FECHAS (respaldo) ----------
      Se usan solo si no hay planilla o si la planilla no se puede leer.

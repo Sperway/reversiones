@@ -18,15 +18,20 @@ Es un sitio **estático** (HTML + CSS + JS, sin build): se puede publicar gratis
 
 ## Cómo actualizar el contenido
 
-Todo el contenido está en **`assets/js/content.js`**: videos, integrantes, tema, concepto, cinta animada, formatos y datos de contacto. Las **fechas** se cargan desde una planilla de Google (ver abajo).
+Todo el contenido está en **`assets/js/content.js`**: videos, integrantes, tema, concepto, cinta animada, formatos y datos de contacto. Las **fechas** y los **videos nuevos** se cargan desde una planilla de Google (ver abajo).
 
-### Fechas desde Google Sheets (sin tocar código)
-1. Crear una planilla con estos encabezados en la fila 1: `Fecha | Hora | Lugar | Ciudad | Entradas | Estado`.
-2. Cargar una fila por show. Fecha en formato **DD/MM/AAAA** (ej: `24/10/2026`), hora `22:00`. *Entradas* es un link (opcional) y *Estado* una etiqueta como "Agotado" o "Privado" (opcional).
-3. **Compartir → Acceso general → Cualquier persona con el enlace → Lector.**
-4. Pegar el link de la planilla en `fechasPlanilla` dentro de `content.js` (una sola vez).
+### Fechas y videos desde Google Sheets (sin tocar código)
+Una sola planilla con **dos pestañas**:
 
-Desde ahí, la banda solo edita la planilla: la web la lee cada vez que alguien entra. Las fechas pasadas se mueven solas a "Shows anteriores". Si la planilla no se puede leer, se usan las fechas de `fechas` en `content.js` como respaldo.
+| Pestaña | Columnas (fila 1) |
+|---|---|
+| **Fechas** | `Fecha` (DD/MM/AAAA) · `Hora` (22:00) · `Lugar` · `Ciudad` · `Entradas` (link, opcional) · `Estado` (ej. "Agotado", opcional) |
+| **Videos** | `Link` (de YouTube) · `Título` · `Lugar` · `Destacado` ("sí" en el que va grande) |
+
+1. **Compartir → Acceso general → Cualquier persona con el enlace → Lector.**
+2. Pegar el link de la planilla en `planilla` dentro de `content.js` (una sola vez).
+
+Desde ahí la banda solo edita la planilla: la web la lee cada vez que alguien entra. Las fechas pasadas se mueven solas a "Shows anteriores". Los videos de la planilla aparecen primero (en el orden de la planilla) y después los videos por defecto de `content.js`. Si la planilla no se puede leer, se usan los datos de `content.js`.
 
 ### Editar el archivo
 Abrí `assets/js/content.js` y agregá un objeto a la lista correspondiente:
