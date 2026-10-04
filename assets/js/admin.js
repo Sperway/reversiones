@@ -67,7 +67,7 @@
     integrantes: {
       title: "Integrantes",
       help: "Cada integrante aparece como un pedal con un efecto real. La foto es opcional (ruta dentro del sitio, ej: assets/img/integrantes/juan.jpg).",
-      empty: { nombre: "", rol: "", instrumento: "guitarra", fx: "overdrive", equipo: "", rango: "", funcion: "", foto: "" },
+      empty: { nombre: "", rol: "", instrumento: "guitarra", fx: "overdrive", equipo: "", rango: "", funcion: "", foto: "", toma: "" },
       fields: [
         { k: "nombre", label: "Nombre" },
         { k: "rol", label: "Rol" },
@@ -76,6 +76,7 @@
         { k: "equipo", label: "Equipo" },
         { k: "rango", label: "Rango de frecuencias" },
         { k: "foto", label: "Foto (ruta o URL)" },
+        { k: "toma", label: "Toma real (ruta del audio)" },
         { k: "funcion", label: "Qué aporta a la mezcla", type: "textarea" }
       ]
     }

@@ -418,6 +418,8 @@
     const inst = ICONS[m.instrumento] ? m.instrumento : "otro";
     const photo = safeUrl(m.foto) || (m.foto && !/^[a-z]+:/i.test(m.foto) ? m.foto : "");
     const fxKey = fxFor(m);
+    const toma = String(m.toma || "").trim();
+    const hasToma = !!toma && !/^\s*javascript:/i.test(toma);
     const fxDef = FXDEFS[fxKey] || { label: fxKey.toUpperCase(), desc: "", knobs: [{ n: "VOL", d: 50 }, { n: "TONE", d: 50 }, { n: "GAIN", d: 50 }] };
     const vals = fxDef.knobs.map((k) => k.d / 100);
     const ch = String(i + 1).padStart(2, "0");
@@ -456,10 +458,10 @@
         <button class="pedal__switch" aria-pressed="false" aria-label="Activar ${esc(fxDef.label)} y escuchar a ${esc(m.rol)}">
           <span class="pedal__switch-cap"></span>
         </button>
-        <button class="pedal__replay" aria-label="Volver a escuchar">▶</button>
+        <button class="pedal__replay" aria-label="${hasToma ? "Reproducir la toma real" : "Volver a escuchar"}">▶</button>
       </div>
-      <span class="pedal__hint">Pisalo: escuchá con y sin efecto</span>
-      <span class="pedal__model">REV-${ch} · ${esc(fxKey.toUpperCase())}</span>
+      <span class="pedal__hint">${hasToma ? "▶ Toma real · pisalo para prender el efecto" : "Pisalo: escuchá con y sin efecto"}</span>
+      <span class="pedal__model">REV-${ch} · ${esc(fxKey.toUpperCase())}${hasToma ? ` · <b class="pedal__take">TOMA REAL</b>` : ""}</span>
     `;
 
     const state = $(".pedal__state", el);
@@ -474,33 +476,71 @@
     };
     showParams();
 
+    let takeOn = false;
+    let takeFailed = false;
+    const replay = $(".pedal__replay", el);
+
     const runMeter = () => {
       const lv = audioPedal ? audioPedal.level() : 0;
       const n = Math.min(10, Math.round(lv * 40));
       meter.forEach((seg, j) => seg.classList.toggle("is-lit", j < n));
-      if (performance.now() < meterUntil) requestAnimationFrame(runMeter);
+      if (takeOn || performance.now() < meterUntil) requestAnimationFrame(runMeter);
       else meter.forEach((seg) => seg.classList.remove("is-lit"));
     };
-
-    const play = () => {
-      if (!Audio) return;
-      if (!audioPedal) audioPedal = Audio.makePedal(fxKey, vals);
-      if (!audioPedal) return;
-      audioPedal.setOn(el.classList.contains("is-on"));
-      audioPedal.play(m.instrumento);
-      const already = performance.now() < meterUntil;
-      meterUntil = performance.now() + 3200;
+    const startMeter = (ms) => {
+      const already = takeOn || performance.now() < meterUntil;
+      meterUntil = Math.max(meterUntil, performance.now() + ms);
       if (!already) requestAnimationFrame(runMeter);
     };
+
+    const ensurePedal = () => {
+      if (!audioPedal && Audio) audioPedal = Audio.makePedal(fxKey, vals);
+      if (audioPedal) audioPedal.setOn(el.classList.contains("is-on"));
+      return audioPedal;
+    };
+
+    // Frase sintetizada (cuando no hay toma real, o si el archivo no carga)
+    const play = () => {
+      if (!ensurePedal()) return;
+      audioPedal.play(m.instrumento);
+      startMeter(3200);
+    };
+
+    // Toma real del músico: play/pausa en loop a través del pedal
+    const onTakeState = (ev) => {
+      if (ev === "error") {
+        // El archivo no cargó: el pedal vuelve a la frase sintetizada
+        takeFailed = true;
+        takeOn = false;
+        $(".pedal__hint", el).textContent = "Pisalo: escuchá con y sin efecto";
+        const badge = $(".pedal__take", el);
+        if (badge) badge.remove();
+        play();
+      } else {
+        if (ev === "play") startMeter(0); // antes de marcar takeOn, para que arranque el medidor
+        takeOn = ev === "play";
+      }
+      el.classList.toggle("is-take", takeOn);
+      replay.textContent = takeOn ? "❚❚" : "▶";
+      replay.setAttribute("aria-label", takeOn ? "Pausar la toma real" : "Reproducir la toma real");
+    };
+    const toggleTake = () => {
+      if (!ensurePedal()) return;
+      audioPedal.toggleTake(toma, onTakeState).catch(() => onTakeState("error"));
+    };
+    const useTake = () => hasToma && !takeFailed;
 
     sw.addEventListener("click", () => {
       const on = !el.classList.contains("is-on");
       el.classList.toggle("is-on", on);
       sw.setAttribute("aria-pressed", String(on));
       state.textContent = on ? `● ${fxDef.label} ON` : "BYPASS";
-      play();
+      if (useTake()) {
+        ensurePedal();
+        if (!takeOn) toggleTake(); // si la toma no sonaba, arranca; si sonaba, solo cambia el efecto
+      } else play();
     });
-    $(".pedal__replay", el).addEventListener("click", play);
+    replay.addEventListener("click", () => (useTake() ? toggleTake() : play()));
 
     board.appendChild(el);
     $$(".knob", el).forEach((k, j) => {

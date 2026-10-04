@@ -56,6 +56,8 @@ window.REVERSIONES = {
      fx: efecto REAL que aplica el pedal:
          reverb | overdrive | chorus | lowend | thunder | synth | delay | tremolo
      rango: frecuencias que ocupa en la mezcla · funcion: qué aporta al sonido de la banda
+     toma: toma real del músico (ej: "assets/audio/integrantes/voz.mp3"). Mejor una toma
+           SECA (sin efectos) de 10–30 s: el pedal le aplica su efecto en vivo. Vacío = sonido sintetizado.
      foto: ruta a una imagen (ej: "assets/img/integrantes/juan.jpg") o "" para usar ilustración. */
   integrantes: [
     {
@@ -66,6 +68,7 @@ window.REVERSIONES = {
       equipo: "Shure SM58",
       rango: "100 Hz – 1,2 kHz",
       funcion: "Lleva la melodía y la letra. Va al centro y al frente de la mezcla.",
+      toma: "",
       foto: ""
     },
     {
@@ -76,6 +79,7 @@ window.REVERSIONES = {
       equipo: "Stratocaster · Marshall",
       rango: "80 Hz – 5 kHz",
       funcion: "Riffs y solos en los medios-agudos: le da filo y corta la mezcla.",
+      toma: "",
       foto: ""
     },
     {
@@ -86,6 +90,7 @@ window.REVERSIONES = {
       equipo: "Telecaster · Fender",
       rango: "80 Hz – 5 kHz",
       funcion: "Colchón de acordes abierto en estéreo: rellena los costados de la mezcla.",
+      toma: "",
       foto: ""
     },
     {
@@ -96,6 +101,7 @@ window.REVERSIONES = {
       equipo: "Jazz Bass · Ampeg",
       rango: "40 Hz – 400 Hz",
       funcion: "Une el bombo con la armonía: es el piso de graves que se siente en el pecho.",
+      toma: "",
       foto: ""
     },
     {
@@ -106,6 +112,7 @@ window.REVERSIONES = {
       equipo: "Pearl · Zildjian",
       rango: "40 Hz – 16 kHz",
       funcion: "Marca el pulso: bombo en los graves, redoblante en los medios, platos arriba.",
+      toma: "",
       foto: ""
     },
     {
@@ -116,6 +123,7 @@ window.REVERSIONES = {
       equipo: "Nord · Korg",
       rango: "30 Hz – 8 kHz",
       funcion: "Pianos, pads y sintes: las texturas que cambian el color de cada reversión.",
+      toma: "",
       foto: ""
     }
   ],

@@ -394,6 +394,12 @@
      el espectro, el osciloscopio y los VU meters. */
   A.track = null;
   A.trackMode = false;
+  A._takes = new Set();
+
+  // Pausa las tomas de los integrantes (menos "except")
+  A.pauseTakes = function (except) {
+    A._takes.forEach((el) => el !== except && !el.paused && el.pause());
+  };
 
   A.setTrack = function (url) {
     A.track = url || null;
@@ -429,6 +435,7 @@
     if (!A.init()) return false;
     if (A.playing) return true;
     A.playing = true;
+    A.pauseTakes();
     if (A.track) {
       A.trackMode = true;
       trackElement()
@@ -836,7 +843,30 @@
         ramp(wet.gain, on ? 1 : 0);
       },
       play: (instrument) => A.playInstrument(instrument, input),
-      level: () => rms(analyser)
+      level: () => rms(analyser),
+
+      /* Toma real del músico (archivo de audio) pasando por este pedal.
+         Suena en loop; el footswitch prende/apaga el efecto sin cortarla. */
+      takeEl: null,
+      toggleTake(url, onState) {
+        let el = pedal.takeEl;
+        if (!el) {
+          el = pedal.takeEl = new Audio();
+          el.src = url;
+          el.loop = true;
+          el.preload = "auto";
+          ctx.createMediaElementSource(el).connect(input);
+          A._takes.add(el);
+          ["play", "pause", "error"].forEach((ev) => el.addEventListener(ev, () => onState && onState(ev)));
+        }
+        if (!el.paused) {
+          el.pause();
+          return Promise.resolve(false);
+        }
+        A.pauseTakes(el);
+        A.stop(); // el tema del inicio no suena encima de la toma
+        return el.play().then(() => true);
+      }
     };
     return pedal;
   };

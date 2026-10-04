@@ -1560,6 +1560,18 @@ button {
   background: rgba(0, 0, 0, 0.35);
   transform: scale(1.08);
 }
+.pedal__take {
+  font-weight: 400;
+  color: #111;
+  background: rgba(255, 255, 255, 0.45);
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+.pedal.is-take .pedal__replay {
+  background: #111;
+  color: var(--pedal);
+  border-color: #111;
+}
 .pedal__hint {
   margin-top: 12px;
   font-size: 11px;
