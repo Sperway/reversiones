@@ -14,8 +14,8 @@ window.EVENTO_FITO = {
   bajada: "Homenaje a Fito Páez · Un recorrido en vivo por las canciones del rosarino que le puso piano al rock nacional",
 
   fecha: "2026-10-11", // AAAA-MM-DD
-  hora: "20:30", // vacío = "Hora a confirmar"
-  apertura: "", // apertura de puertas, ej: "20:30"
+  hora: "", // hora del show · vacío = no se muestra (o "Hora a confirmar" si tampoco hay apertura)
+  apertura: "20:30", // apertura de puertas
   lugar: "Sala Cultural Intendente Cardinali", // vacío = "Sala a confirmar"
   direccion: "", // ej: "Calle 123"
   ciudad: "Firmat, Santa Fe",
@@ -63,9 +63,13 @@ window.EVENTO_FITO = {
        codificarInvitado({ nombre: "Nombre", rol: "Voz", foto: "assets/img/invitados/x.jpg" })
      Después del evento se muestran todos destapados. */
   invitados: [
-    { pista: "Una voz que conocés de memoria", desbloquea: "", secreto: "=0nIiAiOi8GdvZmIgwiI69mViAiOiw2byJCIsISMgwWYpNWZwNXZg8GZhRXa25WSiAiOiUmci12buJye" },
-    { pista: "Seis cuerdas y mucha calle", desbloquea: "2026-10-07", secreto: "==QfiICI6Iyb09mZiACLiEmcyFGdpV3RiAiOiw2byJCIsIiMgwWYpNWZwNXZg8GZhRXa25WSiAiOiUmci12buJye" },
-    { pista: "El que nunca falta en las peñas", desbloquea: "2026-10-09", secreto: "==QfiICI6Iyb09mZiACLiM3bkFGbjVGViAiOiw2byJCIsIyMgwWYpNWZwNXZg8GZhRXa25WSiAiOiUmci12buJye" }
+    { pista: "Seis cuerdas y mucha calle", desbloquea: "", secreto: "==QfiICI6Iyb09mZiACLiEmcyFGdpV3RiAiOiw2byJCIsISaulmcnVGbsVGUg8WajVHTiAiOiUmci12buJye" },
+    { pista: "La armonía que se te queda en la cabeza", desbloquea: "2026-10-05", secreto: "=0nIiAiOi8GdvZmIgwiI69mdgkHIz9mcvNkIgojIs9mciACLikGZuFmcQBSa0FGViAiOiUmci12buJye" },
+    { pista: "Una voz para cantar a los gritos", desbloquea: "2026-10-06", secreto: "=0nIiAiOi8GdvZmIgwiI69mViAiOiw2byJCIsISYylXZyJXZGBSZkVmRiAiOiUmci12buJye" },
+    { pista: "Aire que se vuelve melodía", desbloquea: "2026-10-07", secreto: "9JiIgojIvR3bmJCIsIycvRnbllmViAiOiw2byJCIsISYsVWd65WZsFmVgQWZ2FGRiAiOiUmci12buJye" },
+    { pista: "Metales que hacen brillar el escenario", desbloquea: "2026-10-08", secreto: "==QfiICI6Iyb09mZiACLiM3b05WZpZlIgojIs9mciACLiMXZ0J3bDBSeu9GViAiOiUmci12buJye" },
+    { pista: "El soplo que completa la sección", desbloquea: "2026-10-09", secreto: "==QfiICI6Iyb09mZiACLiM3b05WZpZlIgojIs9mciACLikmbpJnYtVGd0V2Ug8WasVnSiAiOiUmci12buJye" },
+    { pista: "La última voz que se suma a la noche", desbloquea: "2026-10-10", secreto: "9JiIgojIvR3bmJCIsIievZlIgojIs9mciACLi8mc1FGbhBFIlxWQiAiOiUmci12buJye" }
   ],
 
   /* ---------- DESPUÉS DEL EVENTO ----------

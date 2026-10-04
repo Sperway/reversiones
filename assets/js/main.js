@@ -298,7 +298,7 @@
     $("#navEvent").lastChild.textContent = EV.titulo || "Todo Fito";
     $("#ebInfo").textContent = [
       `${DIAS_LARGOS[evDate.getDay()]} ${ed} de ${MESES_LARGOS[em - 1]}`,
-      EV.hora ? EV.hora + " hs" : "",
+      EV.hora ? EV.hora + " hs" : EV.apertura ? "Puertas " + EV.apertura + " hs" : "",
       EV.lugar || "",
       EV.ciudad || ""
     ]

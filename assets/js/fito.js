@@ -30,7 +30,8 @@
   const DIAS = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
   const MESES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
   const [y, mo, d] = String(EV.fecha || "").split("-").map(Number);
-  const [hh, mm] = String(EV.hora || "").split(":").map(Number);
+  // la cuenta regresiva apunta al show o, si no hay hora, a la apertura de puertas
+  const [hh, mm] = String(EV.hora || EV.apertura || "").split(":").map(Number);
   const hasDate = y && mo && d;
   const start = hasDate ? new Date(y, mo - 1, d, isNaN(hh) ? 0 : hh, isNaN(mm) ? 0 : mm) : null;
   // Se considera terminado a las 6 de la mañana del día siguiente
@@ -54,8 +55,9 @@
   const facts = [];
   const cap = (w) => w.charAt(0).toUpperCase() + w.slice(1);
   if (hasDate) facts.push(`<b>${cap(DIAS[start.getDay()])}</b> ${d} de ${MESES[mo - 1]}`);
-  facts.push(EV.hora ? `<b>${esc(EV.hora)}</b> hs` : "Hora a confirmar");
-  if (EV.apertura && !isDone) facts.push(`Puertas <b>${esc(EV.apertura)}</b>`);
+  if (EV.apertura) facts.push(`Puertas <b>${esc(EV.apertura)}</b> hs`);
+  if (EV.hora) facts.push(`Show <b>${esc(EV.hora)}</b> hs`);
+  else if (!EV.apertura) facts.push("Hora a confirmar");
   facts.push([EV.lugar ? `<b>${esc(EV.lugar)}</b>` : "Sala a confirmar", esc(EV.ciudad || "")].filter(Boolean).join(" · "));
   if (EV.precio && !isDone) facts.push(`Entrada <b>${esc(EV.precio)}</b>`);
   $("#facts").innerHTML = facts.map((f) => `<li>${f}</li>`).join("");

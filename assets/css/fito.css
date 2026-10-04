@@ -725,10 +725,18 @@ a {
   color: var(--paper);
 }
 .scratchers {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 300px));
+  display: flex;
+  flex-wrap: wrap;
   justify-content: center;
-  gap: 34px;
+  gap: 34px 30px;
+}
+.scratchers .scratcher {
+  width: min(250px, 100%);
+}
+@media (max-width: 600px) {
+  .scratchers .scratcher {
+    width: min(300px, 100%);
+  }
 }
 .scratcher {
   position: relative;
