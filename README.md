@@ -38,6 +38,15 @@ fechas: [
 ],
 ```
 
+### Tema del inicio
+El botón del inicio puede reproducir un **tema real de la banda**: subí el archivo a `assets/audio/` (mp3 recomendado) y completá en `content.js`:
+
+```js
+tema: { archivo: "assets/audio/tema.mp3", titulo: "Nombre del tema", detalle: "Reversión en vivo · 2026" },
+```
+
+El tema mueve el espectro, el osciloscopio, los VU meters y el logo, y aparece un display con el título y el tiempo. Si `archivo` queda vacío, suena el loop instrumental sintetizado.
+
 ### Efectos de los pedales
 Campo `fx` de cada integrante: `reverb`, `overdrive`, `chorus`, `lowend`, `thunder` (bus de batería), `synth` (filtro resonante), `delay` o `tremolo`. El campo `instrumento` define qué frase suena a través del pedal.
 

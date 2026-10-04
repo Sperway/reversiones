@@ -25,6 +25,16 @@ window.REVERSIONES = {
     ]
   },
 
+  /* ---------- TEMA DEL INICIO ----------
+     Tema real que suena al tocar el botón del inicio. Subí el archivo a
+     assets/audio/ (mp3 recomendado) y poné la ruta. Si queda vacío,
+     suena un loop instrumental sintetizado. */
+  tema: {
+    archivo: "", // ej: "assets/audio/tema.mp3"
+    titulo: "",
+    detalle: "" // ej: "Reversión en vivo · 2026"
+  },
+
   contacto: {
     // Número con código de país, sin "+" ni espacios. Ej: 5491112345678
     whatsapp: "5493465000000",

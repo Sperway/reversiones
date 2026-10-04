@@ -64,6 +64,7 @@
     splitter.connect(aR, 1);
 
     A.master = bus;
+    A._out = out;
     A.analyser = analyser;
     A.analyserL = aL;
     A.analyserR = aR;
@@ -351,13 +352,54 @@
     }
   }
 
+  /* ---------------- Tema real de la banda ----------------
+     Si hay un archivo configurado, el botón del inicio reproduce ese tema
+     (en vez del loop sintetizado) y pasa por el mismo analizador que mueve
+     el espectro, el osciloscopio y los VU meters. */
+  A.track = null;
+  A.trackMode = false;
+
+  A.setTrack = function (url) {
+    A.track = url || null;
+  };
+
+  function trackElement() {
+    if (A._audioEl) return A._audioEl;
+    const el = new Audio();
+    el.src = A.track;
+    el.preload = "metadata";
+    el.addEventListener("ended", () => {
+      el.currentTime = 0;
+      A.stop();
+    });
+    const src = A.ctx.createMediaElementSource(el);
+    const g = A.ctx.createGain();
+    g.gain.value = 1 / 0.7; // compensa la ganancia de salida: el tema suena a su volumen original
+    src.connect(g).connect(A._out); // sin el compresor del bus: la mezcla del tema queda intacta
+    A._audioEl = el;
+    return el;
+  }
+
+  function startSynth() {
+    A.trackMode = false;
+    A._step = 0;
+    A._nextTime = A.ctx.currentTime + 0.06;
+    A._timer = setInterval(scheduler, 25);
+  }
+
   A.start = function () {
     if (!A.init()) return false;
     if (A.playing) return true;
     A.playing = true;
-    A._step = 0;
-    A._nextTime = A.ctx.currentTime + 0.06;
-    A._timer = setInterval(scheduler, 25);
+    if (A.track) {
+      A.trackMode = true;
+      trackElement()
+        .play()
+        .catch(() => {
+          // Si el archivo no carga, cae al loop sintetizado
+          if (A.playing && A.trackMode) startSynth();
+        });
+    } else startSynth();
     A._emit("state", true);
     return true;
   };
@@ -366,11 +408,17 @@
     if (!A.playing) return;
     A.playing = false;
     clearInterval(A._timer);
+    if (A._audioEl) A._audioEl.pause(); // queda en pausa: al volver a tocar sigue desde ahí
     A._emit("state", false);
   };
 
   A.toggle = function () {
     return A.playing ? (A.stop(), false) : A.start();
+  };
+
+  A.trackTime = function () {
+    const el = A._audioEl;
+    return el ? { current: el.currentTime, duration: el.duration || 0 } : null;
   };
 
   /* ---------------- Sonido de cada integrante ---------------- */

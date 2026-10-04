@@ -127,6 +127,36 @@
   let vuValL = 0,
     vuValR = 0;
 
+  function pulseBeat() {
+    document.body.classList.add("beat");
+    setTimeout(() => document.body.classList.remove("beat"), 90);
+  }
+
+  // Con un tema real no hay secuenciador: detecta los golpes por la energía de los graves
+  let lowAvg = 0,
+    lastBeat = 0,
+    lastTimeTxt = "";
+  const fmtTime = (sec) => (isFinite(sec) ? Math.floor(sec / 60) + ":" + String(Math.floor(sec % 60)).padStart(2, "0") : "--:--");
+  function detectBeat(t) {
+    let low = 0;
+    for (let k = 1; k <= 5; k++) low += freqData[k];
+    low /= 5;
+    if (low > lowAvg * 1.18 && low > 140 && t - lastBeat > 260) {
+      lastBeat = t;
+      pulseBeat();
+    }
+    lowAvg = lowAvg * 0.94 + low * 0.06;
+    const tt = Audio.trackTime();
+    if (tt) {
+      const txt = fmtTime(tt.current) + " / " + fmtTime(tt.duration);
+      if (txt !== lastTimeTxt) {
+        lastTimeTxt = txt;
+        $("#npTime").textContent = txt;
+        $("#npBar").style.transform = `scaleX(${tt.duration ? tt.current / tt.duration : 0})`;
+      }
+    }
+  }
+
   function drawHero(t) {
     requestAnimationFrame(drawHero);
     if (!heroVisible) return;
@@ -140,6 +170,7 @@
     const maxH = H * (W < 700 ? 0.26 : 0.34);
 
     if (live) Audio.analyser.getByteFrequencyData(freqData);
+    if (live && Audio.trackMode) detectBeat(t);
 
     for (let i = 0; i < bars; i++) {
       let v;
@@ -221,24 +252,31 @@
   }
   requestAnimationFrame(drawHero);
 
-  // Botón "Probar sonido"
+  // Botón del inicio: tema real de la banda (si está cargado) o loop sintetizado
   const powerBtn = $("#powerBtn");
+  const tema = DATA.tema || {};
+  const hasTrack = !!String(tema.archivo || "").trim() && !/^\s*javascript:/i.test(tema.archivo);
+  const btnLabel = (on) => (on ? (hasTrack ? "Pausar" : "Cortar sonido") : hasTrack ? "Escuchá a Reversiones" : "Probar sonido");
+  const nowPlaying = $("#nowPlaying");
   if (Audio) {
-    powerBtn.addEventListener("click", () => {
-      const on = Audio.toggle();
-      powerBtn.setAttribute("aria-pressed", String(!!on));
-      powerBtn.querySelector("span").textContent = on ? "Cortar sonido" : "Probar sonido";
-    });
+    if (hasTrack) {
+      Audio.setTrack(tema.archivo.trim());
+      $("#npTitle").textContent = tema.titulo || "Reversiones";
+      $("#npDetail").textContent = tema.detalle || "";
+    }
+    powerBtn.querySelector("span").textContent = btnLabel(false);
+    powerBtn.addEventListener("click", () => Audio.toggle());
     Audio.on((type, data) => {
       if (type === "state") {
         document.body.classList.toggle("is-playing", data);
+        powerBtn.setAttribute("aria-pressed", String(!!data));
+        powerBtn.querySelector("span").textContent = btnLabel(data);
+        if (hasTrack) nowPlaying.hidden = false;
+        nowPlaying.classList.toggle("is-paused", !data);
       }
       if (type === "step" && data.step % 4 === 0) {
         const delay = Math.max(0, (data.time - Audio.ctx.currentTime) * 1000);
-        setTimeout(() => {
-          document.body.classList.add("beat");
-          setTimeout(() => document.body.classList.remove("beat"), 90);
-        }, delay);
+        setTimeout(pulseBeat, delay);
       }
     });
   } else {
