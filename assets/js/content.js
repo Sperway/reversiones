@@ -26,8 +26,8 @@ window.REVERSIONES = {
      suena un loop instrumental sintetizado. */
   tema: {
     archivo: "assets/audio/tema.mp3",
-    titulo: "Reversiones",
-    detalle: "Adelanto · Todo Fito 11/10"
+    titulo: "El amor después del amor",
+    detalle: "Reversión de Fito Páez · Adelanto de Todo Fito"
   },
 
   contacto: {
