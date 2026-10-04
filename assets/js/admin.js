@@ -177,7 +177,7 @@
 
   function renderJson() {
     $("#panel").innerHTML = `
-      <p class="adm-help" style="margin-top:0">Edición completa (banda, repertorio, formatos…). Tocá <b>Aplicar</b> para validar.</p>
+      <p class="adm-help" style="margin-top:0">Edición completa (banda, concepto, cinta, formatos…). Tocá <b>Aplicar</b> para validar.</p>
       <textarea class="json" id="json" spellcheck="false">${esc(JSON.stringify(data, null, 2))}</textarea>
       <div class="add"><button class="btn btn--primary btn--small" id="applyJson">Aplicar</button></div>`;
     $("#applyJson").addEventListener("click", () => {

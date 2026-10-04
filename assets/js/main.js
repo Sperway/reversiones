@@ -246,9 +246,8 @@
   }
 
   /* ---------------- MARQUEE ---------------- */
-  const artists = (DATA.repertorio || []).map((r) => r.artista);
   const mq = $("#marquee");
-  const mqItems = artists.map((a) => `<span>${esc(a)}</span><i>✦</i>`).join("");
+  const mqItems = (DATA.cinta || ["Rock nacional", "Reversiones", "En vivo"]).map((a) => `<span>${esc(a)}</span><i>✦</i>`).join("");
   mq.innerHTML = mqItems + mqItems;
 
   /* ---------------- BANDA ---------------- */
@@ -515,35 +514,43 @@
     setInterval(tick, 1000);
   }
 
-  /* ---------------- REPERTORIO ---------------- */
-  const setlist = $("#setlist");
-  setlist.innerHTML =
-    `<label class="setlist__search reveal"><span>BUSCAR</span><input type="search" id="songSearch" placeholder="Artista o tema…" autocomplete="off"></label>` +
-    `<div class="setlist__grid">` +
-    (DATA.repertorio || [])
-      .map(
-        (r, i) => `
-      <article class="track reveal" style="transition-delay:${(i % 4) * 60}ms">
-        <header><span class="track__n">${String(i + 1).padStart(2, "0")}</span><h3>${esc(r.artista)}</h3></header>
-        <ul>${(r.temas || []).map((t) => `<li>${esc(t)}</li>`).join("")}</ul>
-        <div class="track__meter" aria-hidden="true"><i></i></div>
+  /* ---------------- CONCEPTO (cadena de señal) ---------------- */
+  const concepto = DATA.concepto || {};
+  $("#conceptLead").textContent = concepto.lead || "";
+  $("#chain").innerHTML = (concepto.pasos || [])
+    .map(
+      (p, i) => `
+      <article class="module reveal" style="transition-delay:${i * 120}ms">
+        <span class="module__jack module__jack--in" aria-hidden="true"></span>
+        <span class="module__jack module__jack--out" aria-hidden="true"></span>
+        <div class="module__top">
+          <span class="module__code">${esc(p.codigo || String(i + 1))}</span>
+          <span class="led led--on${i === (concepto.pasos.length - 1) ? " led--red" : ""}"></span>
+        </div>
+        <div class="module__scope" aria-hidden="true"><svg viewBox="0 0 120 40" preserveAspectRatio="none"><path d="${wavePath(i)}"/></svg></div>
+        <span class="module__n">${String(i + 1).padStart(2, "0")}</span>
+        <h3>${esc(p.titulo)}</h3>
+        <p>${esc(p.texto)}</p>
+        <div class="module__knobs"><div class="knob knob--sm" data-label="IN"></div><div class="knob knob--sm" data-label="OUT"></div></div>
       </article>`
-      )
-      .join("") +
-    `</div><p class="setlist__empty" hidden>No está en la lista… ¡pero lo podemos sacar para tu evento!</p>`;
-  const search = $("#songSearch");
-  const norm = (s) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
-  search.addEventListener("input", () => {
-    const q = norm(search.value.trim());
-    let shown = 0;
-    $$(".track", setlist).forEach((card) => {
-      const match = !q || norm(card.textContent).includes(q);
-      card.hidden = !match;
-      if (match) shown++;
-      $$("li", card).forEach((li) => li.classList.toggle("is-hit", !!q && norm(li.textContent).includes(q)));
-    });
-    $(".setlist__empty", setlist).hidden = shown > 0;
-  });
+    )
+    .join("");
+  $$("#chain .knob").forEach(initKnob);
+
+  // Cada etapa "procesa" la onda: limpia, separada, con efecto, saturada
+  function wavePath(stage) {
+    let d = "";
+    for (let x = 0; x <= 120; x += 2) {
+      const t = x / 120;
+      let y;
+      if (stage === 0) y = Math.sin(t * Math.PI * 4);
+      else if (stage === 1) y = (x % 30 < 15 ? 1 : 0.4) * Math.sin(t * Math.PI * 8);
+      else if (stage === 2) y = Math.sin(t * Math.PI * 4) * 0.6 + Math.sin(t * Math.PI * 13) * 0.4;
+      else y = Math.max(-0.8, Math.min(0.8, Math.sin(t * Math.PI * 4) * 1.6));
+      d += (x ? "L" : "M") + x + " " + (20 - y * 15).toFixed(1);
+    }
+    return d;
+  }
 
   /* ---------------- FORMATOS + BOOKING ---------------- */
   const formats = DATA.formatos || [];

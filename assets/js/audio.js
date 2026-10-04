@@ -372,7 +372,7 @@
     const t = A.ctx.currentTime + 0.02;
     switch (type) {
       case "voz":
-        // "De música ligera" – frase descendente
+        // Frase melódica descendente
         voice(t, [71, 71, 69, 67, 64], 0.22);
         break;
       case "guitarra":

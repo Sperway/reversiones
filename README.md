@@ -1,6 +1,6 @@
 # Reversiones · Web oficial
 
-Sitio de la banda **Reversiones** (covers de rock nacional argentino). Estética 100% de ingeniería de audio: VU meters, analizador de espectro, osciloscopio, pedales, racks y consola de mezcla.
+Sitio de la banda **Reversiones** de Firmat, Santa Fe, que hace **reversiones** de rock nacional argentino (no covers: reinterpretaciones con sonido propio). Estética 100% de ingeniería de audio: VU meters, analizador de espectro, osciloscopio, pedales, racks y consola de mezcla.
 
 Es un sitio **estático** (HTML + CSS + JS, sin build): se puede publicar gratis en GitHub Pages, Netlify o Vercel.
 
@@ -13,12 +13,12 @@ Es un sitio **estático** (HTML + CSS + JS, sin build): se puede publicar gratis
 | CH2 | Integrantes | Cada músico es un **pedal de efecto**. Al pisar el footswitch se prende el LED, suena su instrumento y aparece su bio en el display. |
 | CH3 | Videos | Monitor con el video destacado y lista de cassettes. Usa YouTube (modo privacidad mejorada). |
 | CH4 | Fechas | Secuenciador con las próximas fechas, cuenta regresiva al próximo show y shows anteriores (se separan solos según la fecha). |
-| CH5 | Repertorio | Artistas y temas con buscador. |
+| CH5 | Concepto | "¿Qué es una reversión?" explicado como una cadena de señal de audio (IN → SPLIT → FX → OUT). |
 | REC | Contratar | Formatos de show (racks) + formulario "booking console" que envía la consulta por **WhatsApp** o **email**. |
 
 ## Cómo actualizar el contenido
 
-Todo el contenido está en **`assets/js/content.js`**: videos, fechas, integrantes, repertorio, formatos y datos de contacto.
+Todo el contenido está en **`assets/js/content.js`**: videos, fechas, integrantes, concepto, cinta animada, formatos y datos de contacto.
 
 ### Opción A — Panel (sin código)
 1. Abrí `admin.html` (por ejemplo `https://tusitio.com/admin.html`).
@@ -31,7 +31,7 @@ Abrí `assets/js/content.js` y agregá un objeto a la lista correspondiente:
 
 ```js
 videos: [
-  { titulo: "Crimen (cover)", url: "https://youtu.be/XXXXXXXXXXX", lugar: "Teatro X", destacado: true },
+  { titulo: "En vivo en Firmat", url: "https://youtu.be/XXXXXXXXXXX", lugar: "Teatro X", destacado: true },
 ],
 fechas: [
   { fecha: "2026-11-07", hora: "21:30", lugar: "La Usina Rock", ciudad: "Morón", entradas: "https://...", estado: "" },
@@ -43,7 +43,8 @@ Subí las fotos a `assets/img/integrantes/` y poné la ruta en el campo `foto` (
 
 ### Datos pendientes de completar
 - Nombres reales, bios y equipos de los integrantes.
-- Número de WhatsApp (`contacto.whatsapp`, formato `5491112345678`) y email.
+- Número de WhatsApp (`contacto.whatsapp`, formato `5493465123456`) y email.
+- Fechas y lugares reales de los shows (las actuales son de ejemplo).
 - Links de redes sociales y de los videos de YouTube.
 - Opcional: endpoint de [Formspree](https://formspree.io) en `contacto.formspree` para recibir el formulario directo por mail.
 
