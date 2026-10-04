@@ -4,6 +4,11 @@
    VU meters, displays LCD y luces de escenario.
    ===================================================================== */
 
+/* Fuentes alojadas localmente (Google Fonts, licencia SIL OFL) */
+@font-face { font-family: "Bebas Neue"; font-style: normal; font-weight: 400; font-display: swap; src: url("../fonts/bebas-neue.woff2") format("woff2"); }
+@font-face { font-family: "Inter"; font-style: normal; font-weight: 400 700; font-display: swap; src: url("../fonts/inter.woff2") format("woff2"); }
+@font-face { font-family: "Share Tech Mono"; font-style: normal; font-weight: 400; font-display: swap; src: url("../fonts/share-tech-mono.woff2") format("woff2"); }
+
 :root {
   --bg: #0a0a0c;
   --bg-2: #111216;

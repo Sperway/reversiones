@@ -64,6 +64,6 @@ python3 -m http.server 8000
 *Settings → Pages → Build and deployment → Deploy from a branch →* elegir la rama `main` y la carpeta `/ (root)`.
 
 ## Notas técnicas
-- Fuentes de Google Fonts (Bebas Neue, Inter, Share Tech Mono), con respaldo a fuentes del sistema.
+- Sin dependencias externas: fuentes alojadas en `assets/fonts` (Bebas Neue, Inter, Share Tech Mono — licencia SIL OFL).
 - Todo el audio se sintetiza en el navegador (no hay archivos de audio); solo suena tras un clic del usuario.
 - Respeta `prefers-reduced-motion` y es responsive (desde 360 px).
