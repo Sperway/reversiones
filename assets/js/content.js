@@ -114,12 +114,7 @@ window.REVERSIONES = {
   /* ---------- FECHAS ----------
      fecha: "AAAA-MM-DD"  ·  hora: "21:30"  ·  entradas: link o "" */
   fechas: [
-    { fecha: "2026-10-24", hora: "22:00", lugar: "Bar (a confirmar)", ciudad: "Firmat, Santa Fe", entradas: "", estado: "" },
-    { fecha: "2026-11-07", hora: "21:30", lugar: "Club (a confirmar)", ciudad: "Venado Tuerto, Santa Fe", entradas: "", estado: "" },
-    { fecha: "2026-11-21", hora: "23:00", lugar: "Festival (a confirmar)", ciudad: "Rosario, Santa Fe", entradas: "", estado: "" },
-    { fecha: "2026-12-12", hora: "22:30", lugar: "Fiesta de Fin de Año", ciudad: "Evento privado", entradas: "", estado: "Privado" },
-    { fecha: "2026-08-15", hora: "22:00", lugar: "Bar (ejemplo)", ciudad: "Casilda, Santa Fe", entradas: "", estado: "" },
-    { fecha: "2026-07-04", hora: "21:00", lugar: "Peña Rockera", ciudad: "Firmat, Santa Fe", entradas: "", estado: "" }
+    // Ejemplo: { fecha: "2026-11-07", hora: "21:30", lugar: "Nombre del lugar", ciudad: "Firmat, Santa Fe", entradas: "", estado: "" }
   ],
 
   /* ---------- CONCEPTO: qué es una reversión ---------- */

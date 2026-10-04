@@ -12,7 +12,7 @@ Es un sitio **estático** (HTML + CSS + JS, sin build): se puede publicar gratis
 | CH1 | La banda | Descripción, tocadiscos con perilla de pitch y contadores LCD. |
 | CH2 | Integrantes | Cada músico es un **pedal de efecto**. Al pisar el footswitch se prende el LED, suena su instrumento y aparece su bio en el display. |
 | CH3 | Videos | Monitor con el video destacado y lista de cassettes. Usa YouTube (modo privacidad mejorada). |
-| CH4 | Fechas | Secuenciador con las próximas fechas, cuenta regresiva al próximo show y shows anteriores (se separan solos según la fecha). |
+| CH4 | Fechas | Secuenciador con las próximas fechas, cuenta regresiva al próximo show y shows anteriores (se separan solos según la fecha). Sin fechas cargadas, muestra el secuenciador en *standby* "esperando señal". |
 | CH5 | Concepto | "¿Qué es una reversión?" explicado como una cadena de señal de audio (IN → SPLIT → FX → OUT). |
 | REC | Contratar | Formatos de show (racks) + formulario "booking console" que envía la consulta por **WhatsApp** o **email**. |
 
@@ -44,7 +44,6 @@ Subí las fotos a `assets/img/integrantes/` y poné la ruta en el campo `foto` (
 ### Datos pendientes de completar
 - Nombres reales, bios y equipos de los integrantes.
 - Número de WhatsApp (`contacto.whatsapp`, formato `5493465123456`) y email.
-- Fechas y lugares reales de los shows (las actuales son de ejemplo).
 - Links de redes sociales y de los videos de YouTube.
 - Opcional: endpoint de [Formspree](https://formspree.io) en `contacto.formspree` para recibir el formulario directo por mail.
 

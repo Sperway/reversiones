@@ -488,9 +488,40 @@
         <div class="gig__action">${action}</div>
       </article>`;
   };
+  // Sin fechas: el secuenciador queda en "standby" esperando la próxima
+  function standbyPanel() {
+    const ig = safeUrl(((DATA.contacto || {}).redes || {}).instagram);
+    return `
+      <div class="standby reveal">
+        <div class="standby__bar">
+          <span class="standby__title"><span class="led led--on led--amber standby__led"></span>SEQUENCER · STANDBY</span>
+          <span class="standby__bpm">BPM <b>---</b></span>
+        </div>
+        <div class="standby__body">
+          <div class="standby__lcd" aria-hidden="true">
+            <b>--/--</b>
+            <small>SIN FECHAS CARGADAS</small>
+          </div>
+          <div class="standby__main">
+            <div class="standby__steps" aria-hidden="true">${Array.from({ length: 16 }, (_, i) => `<i style="--i:${i}"></i>`).join("")}</div>
+            <div class="standby__scope" aria-hidden="true">
+              <svg viewBox="0 0 400 60" preserveAspectRatio="none"><path d="M0 30H170L178 30L184 12L190 48L196 22L202 36L208 30H400"/></svg>
+            </div>
+          </div>
+        </div>
+        <div class="standby__msg">
+          <h3>Esperando señal…</h3>
+          <p>Estamos en la sala de ensayo preparando las próximas reversiones. Muy pronto anunciamos fechas.</p>
+          <div class="standby__actions">
+            <a href="#contratar" class="btn btn--primary btn--small"><span class="led led--on"></span>Llevanos a tu evento</a>
+            ${ig ? `<a href="${esc(ig)}" class="btn btn--ghost btn--small" target="_blank" rel="noopener">Seguinos para enterarte</a>` : ""}
+          </div>
+        </div>
+      </div>`;
+  }
   $("#gigs").innerHTML = upcoming.length
     ? upcoming.map((g, i) => gigRow(g, i, false)).join("")
-    : `<div class="gig gig--empty reveal"><p>No hay fechas anunciadas por ahora. <a href="#contratar">¿Querés que toquemos en tu evento?</a></p></div>`;
+    : standbyPanel();
   if (past.length) $("#pastGigs").innerHTML = past.map((g, i) => gigRow(g, i, true)).join("");
   else $("#pastWrap").hidden = true;
   $("#pastWrap").addEventListener("toggle", () => observeReveal($("#pastWrap")));
