@@ -2025,6 +2025,14 @@ button {
   color: var(--muted);
   white-space: nowrap;
 }
+.gigs__loading {
+  margin: 0;
+  padding: 24px;
+  font-family: var(--font-mono);
+  letter-spacing: 0.15em;
+  color: var(--green);
+  animation: standbyLed 1.2s ease-in-out infinite;
+}
 /* Estado vacío: secuenciador en standby */
 .standby {
   border-radius: 18px;

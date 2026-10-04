@@ -18,15 +18,17 @@ Es un sitio **estático** (HTML + CSS + JS, sin build): se puede publicar gratis
 
 ## Cómo actualizar el contenido
 
-Todo el contenido está en **`assets/js/content.js`**: videos, fechas, integrantes, concepto, cinta animada, formatos y datos de contacto.
+Todo el contenido está en **`assets/js/content.js`**: videos, integrantes, tema, concepto, cinta animada, formatos y datos de contacto. Las **fechas** se cargan desde una planilla de Google (ver abajo).
 
-### Opción A — Panel (sin código)
-1. Abrí `admin.html` (por ejemplo `https://tusitio.com/admin.html`).
-2. Cargá videos (pegando el link de YouTube), fechas, integrantes y contacto.
-3. Con **Vista previa** ves cómo queda.
-4. Tocá **Descargar content.js** y subí ese archivo reemplazando `assets/js/content.js` (en GitHub: carpeta `assets/js` → *Add file* → *Upload files*).
+### Fechas desde Google Sheets (sin tocar código)
+1. Crear una planilla con estos encabezados en la fila 1: `Fecha | Hora | Lugar | Ciudad | Entradas | Estado`.
+2. Cargar una fila por show. Fecha en formato **DD/MM/AAAA** (ej: `24/10/2026`), hora `22:00`. *Entradas* es un link (opcional) y *Estado* una etiqueta como "Agotado" o "Privado" (opcional).
+3. **Compartir → Acceso general → Cualquier persona con el enlace → Lector.**
+4. Pegar el link de la planilla en `fechasPlanilla` dentro de `content.js` (una sola vez).
 
-### Opción B — Editar el archivo
+Desde ahí, la banda solo edita la planilla: la web la lee cada vez que alguien entra. Las fechas pasadas se mueven solas a "Shows anteriores". Si la planilla no se puede leer, se usan las fechas de `fechas` en `content.js` como respaldo.
+
+### Editar el archivo
 Abrí `assets/js/content.js` y agregá un objeto a la lista correspondiente:
 
 ```js

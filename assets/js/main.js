@@ -4,14 +4,7 @@
 (function () {
   "use strict";
 
-  let DATA = window.REVERSIONES || {};
-  // Vista previa del borrador hecho en admin.html (index.html?preview=1)
-  if (/[?&]preview=1/.test(location.search)) {
-    try {
-      const draft = JSON.parse(localStorage.getItem("reversiones-draft"));
-      if (draft) DATA = draft;
-    } catch (e) {}
-  }
+  const DATA = window.REVERSIONES || {};
   const Audio = window.RevAudio;
   const $ = (s, el = document) => el.querySelector(s);
   const $$ = (s, el = document) => Array.from(el.querySelectorAll(s));
@@ -620,17 +613,31 @@
   /* ---------------- FECHAS ---------------- */
   const MESES = ["ENE", "FEB", "MAR", "ABR", "MAY", "JUN", "JUL", "AGO", "SEP", "OCT", "NOV", "DIC"];
   const DIAS = ["DOM", "LUN", "MAR", "MIÉ", "JUE", "VIE", "SÁB"];
-  const parseGig = (g) => {
-    const [y, mo, d] = String(g.fecha || "").split("-").map(Number);
-    const [hh, mm] = String(g.hora || "21:00").split(":").map(Number);
-    const date = new Date(y, (mo || 1) - 1, d || 1, hh || 0, mm || 0);
-    return { ...g, date };
+  // Fechas como texto de planilla: "24/10/2026", "24/10/26" o "2026-10-24"; hora "22:00" o "10:00 p. m."
+  const parseDate = (str) => {
+    const t = String(str || "").trim();
+    let m = t.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+    if (m) return [+m[1], +m[2], +m[3]];
+    m = t.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{2,4})/);
+    if (m) return [m[3].length === 2 ? 2000 + +m[3] : +m[3], +m[2], +m[1]];
+    return null;
   };
-  const now = new Date();
-  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const gigs = (DATA.fechas || []).filter((g) => g.fecha).map(parseGig).filter((g) => !isNaN(g.date));
-  const upcoming = gigs.filter((g) => g.date >= startOfToday).sort((a, b) => a.date - b.date);
-  const past = gigs.filter((g) => g.date < startOfToday).sort((a, b) => b.date - a.date);
+  const parseTime = (str) => {
+    const m = String(str || "").match(/(\d{1,2})[:.](\d{2})/);
+    if (!m) return [21, 0];
+    let h = +m[1];
+    if (/p\.?\s*m/i.test(str) && h < 12) h += 12;
+    if (/a\.?\s*m/i.test(str) && h === 12) h = 0;
+    return [h, +m[2]];
+  };
+  const parseGig = (g) => {
+    const d = parseDate(g.fecha);
+    if (!d) return null;
+    const [hh, mm] = parseTime(g.hora);
+    const date = new Date(d[0], d[1] - 1, d[2], hh, mm);
+    const hora = g.hora ? String(hh).padStart(2, "0") + ":" + String(mm).padStart(2, "0") : "";
+    return isNaN(date) ? null : { ...g, hora, date };
+  };
 
   const gigRow = (g, i, isPast) => {
     const tickets = safeUrl(g.entradas);
@@ -685,31 +692,92 @@
         </div>
       </div>`;
   }
-  $("#gigs").innerHTML = upcoming.length
-    ? upcoming.map((g, i) => gigRow(g, i, false)).join("")
-    : standbyPanel();
-  if (past.length) $("#pastGigs").innerHTML = past.map((g, i) => gigRow(g, i, true)).join("");
-  else $("#pastWrap").hidden = true;
+  let countdownTimer = null;
+  function renderFechas(list) {
+    const now = new Date();
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const gigs = (list || []).map(parseGig).filter(Boolean);
+    const upcoming = gigs.filter((g) => g.date >= startOfToday).sort((a, b) => a.date - b.date);
+    const past = gigs.filter((g) => g.date < startOfToday).sort((a, b) => b.date - a.date);
+
+    $("#gigs").innerHTML = upcoming.length ? upcoming.map((g, i) => gigRow(g, i, false)).join("") : standbyPanel();
+    $("#pastGigs").innerHTML = past.map((g, i) => gigRow(g, i, true)).join("");
+    $("#pastWrap").hidden = !past.length;
+
+    // Cuenta regresiva al próximo show
+    clearInterval(countdownTimer);
+    const nextGig = upcoming.find((g) => g.date > now);
+    $("#countdown").hidden = !nextGig;
+    if (nextGig) {
+      $("#cdVenue").textContent = [nextGig.lugar, nextGig.ciudad].filter(Boolean).join(" · ");
+      const pad = (n) => String(n).padStart(2, "0");
+      const tick = () => {
+        const s = Math.floor(Math.max(0, nextGig.date - new Date()) / 1000);
+        $("#cdD").textContent = pad(Math.floor(s / 86400));
+        $("#cdH").textContent = pad(Math.floor((s % 86400) / 3600));
+        $("#cdM").textContent = pad(Math.floor((s % 3600) / 60));
+        $("#cdS").textContent = pad(s % 60);
+      };
+      tick();
+      countdownTimer = setInterval(tick, 1000);
+    }
+    observeReveal($("#fechas"));
+  }
   $("#pastWrap").addEventListener("toggle", () => observeReveal($("#pastWrap")));
 
-  // Cuenta regresiva al próximo show
-  const nextGig = upcoming.find((g) => g.date > now);
-  if (nextGig) {
-    const cd = $("#countdown");
-    cd.hidden = false;
-    $("#cdVenue").textContent = `${nextGig.lugar} · ${nextGig.ciudad}`;
-    const pad = (n) => String(n).padStart(2, "0");
-    const tick = () => {
-      const diff = Math.max(0, nextGig.date - new Date());
-      const s = Math.floor(diff / 1000);
-      $("#cdD").textContent = pad(Math.floor(s / 86400));
-      $("#cdH").textContent = pad(Math.floor((s % 86400) / 3600));
-      $("#cdM").textContent = pad(Math.floor((s % 3600) / 60));
-      $("#cdS").textContent = pad(s % 60);
-    };
-    tick();
-    setInterval(tick, 1000);
+  /* Fechas desde Google Sheets: la banda edita la planilla y la web la lee al
+     cargar. Acepta el link para compartir (".../spreadsheets/d/ID/edit...")
+     o el de "Publicar en la web". Si falla, usa las fechas de content.js. */
+  function sheetCsvUrl(url) {
+    const u = String(url || "").trim();
+    if (!/^https:\/\/docs\.google\.com\/spreadsheets\//.test(u)) return "";
+    const gid = (u.match(/[#&?]gid=(\d+)/) || [])[1];
+    const pub = u.match(/^(https:\/\/docs\.google\.com\/spreadsheets\/d\/e\/[\w-]+)/);
+    if (pub) return `${pub[1]}/pub?output=csv${gid ? "&gid=" + gid : ""}`;
+    const id = (u.match(/\/d\/([\w-]+)/) || [])[1];
+    return id ? `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:csv${gid ? "&gid=" + gid : ""}` : "";
   }
+  function parseCsv(text) {
+    const rows = [];
+    let row = [], cell = "", q = false;
+    for (let i = 0; i < text.length; i++) {
+      const c = text[i];
+      if (q) {
+        if (c === '"' && text[i + 1] === '"') (cell += '"'), i++;
+        else if (c === '"') q = false;
+        else cell += c;
+      } else if (c === '"') q = true;
+      else if (c === ",") row.push(cell), (cell = "");
+      else if (c === "\n" || c === "\r") {
+        if (c === "\r" && text[i + 1] === "\n") i++;
+        row.push(cell), rows.push(row), (row = []), (cell = "");
+      } else cell += c;
+    }
+    if (cell || row.length) row.push(cell), rows.push(row);
+    return rows;
+  }
+  // Encabezados de la planilla (sin importar mayúsculas ni tildes)
+  const COLS = { fecha: /^fecha/, hora: /^hora/, lugar: /^lugar/, ciudad: /^(ciudad|localidad)/, entradas: /^(entrada|link)/, estado: /^(estado|etiqueta|nota)/ };
+  function sheetToGigs(text) {
+    const [head, ...rows] = parseCsv(text);
+    if (!head) return [];
+    const norm = (h) => h.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
+    const idx = {};
+    head.forEach((h, i) => Object.entries(COLS).forEach(([k, re]) => idx[k] == null && re.test(norm(h)) && (idx[k] = i)));
+    if (idx.fecha == null) throw new Error("La planilla no tiene columna Fecha");
+    return rows
+      .map((r) => Object.fromEntries(Object.keys(COLS).map((k) => [k, idx[k] != null ? (r[idx[k]] || "").trim() : ""])))
+      .filter((g) => g.fecha);
+  }
+
+  const sheetUrl = sheetCsvUrl(DATA.fechasPlanilla);
+  if (sheetUrl) {
+    $("#gigs").innerHTML = `<p class="gigs__loading">▸ Sincronizando fechas…</p>`;
+    fetch(sheetUrl, { cache: "no-store" })
+      .then((r) => (r.ok ? r.text() : Promise.reject(r.status)))
+      .then((text) => renderFechas(sheetToGigs(text)))
+      .catch(() => renderFechas(DATA.fechas));
+  } else renderFechas(DATA.fechas);
 
   /* ---------------- CONCEPTO (cadena de señal) ---------------- */
   const concepto = DATA.concepto || {};

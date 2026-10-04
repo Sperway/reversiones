@@ -1,13 +1,8 @@
 /* =====================================================================
    REVERSIONES · CONTENIDO DEL SITIO
    ---------------------------------------------------------------------
-   Este es el ÚNICO archivo que hace falta tocar para actualizar la web.
-   - Videos:  agregá un objeto a "videos" con la URL de YouTube.
-   - Fechas:  agregá un objeto a "fechas" (formato de fecha AAAA-MM-DD).
-              Las fechas pasadas se mueven solas a "Shows anteriores".
-   - Integrantes, concepto, formatos y contacto: más abajo.
-   También podés usar /admin.html para generar este archivo sin
-   escribir código.
+   Contenido de la web: textos, integrantes, videos, tema, contacto.
+   Las FECHAS se cargan desde una planilla de Google (ver "fechasPlanilla").
    ===================================================================== */
 
 window.REVERSIONES = {
@@ -138,7 +133,14 @@ window.REVERSIONES = {
     { titulo: "Show en bar", url: "", lugar: "Sur de Santa Fe" }
   ],
 
-  /* ---------- FECHAS ----------
+  /* ---------- FECHAS DESDE GOOGLE SHEETS ----------
+     Link de la planilla de fechas (compartida como "Cualquier persona con el
+     enlace: Lector"). Columnas: Fecha | Hora | Lugar | Ciudad | Entradas | Estado
+     Fecha en formato DD/MM/AAAA. La web la lee cada vez que alguien entra. */
+  fechasPlanilla: "",
+
+  /* ---------- FECHAS (respaldo) ----------
+     Se usan solo si no hay planilla o si la planilla no se puede leer.
      fecha: "AAAA-MM-DD"  ·  hora: "21:30"  ·  entradas: link o "" */
   fechas: [
     // Ejemplo: { fecha: "2026-11-07", hora: "21:30", lugar: "Nombre del lugar", ciudad: "Firmat, Santa Fe", entradas: "", estado: "" }
