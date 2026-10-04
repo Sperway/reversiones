@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="es-AR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Reversiones · Rock Nacional en vivo</title>
+  <meta name="description" content="Reversiones: banda de Firmat, Santa Fe, que reversiona clásicos del rock nacional argentino. Contratá la banda para fiestas, eventos, casamientos, bares y festivales.">
+  <meta name="theme-color" content="#0a0a0c">
+  <meta property="og:title" content="Reversiones · Rock Nacional en vivo">
+  <meta property="og:description" content="No hacemos covers: hacemos reversiones de rock nacional. Desde Firmat, Santa Fe. Contratá la banda para tu evento.">
+  <meta property="og:type" content="website">
+  <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="assets/fonts/bebas-neue.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body>
+  <!-- Logo RV (definido una vez, se reutiliza con <use>) -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="rv" viewBox="0 0 116 80"><path fill-rule="evenodd" d="M0 0H44Q60 0 60 16V26Q60 39 47 42L61 80H44L31 44H16V80H0ZM16 13H41Q45 13 45 17V27Q45 31 41 31H16Z"/><path d="M64 11H78L88.5 62L99 11H113L96 80H81Z"/></symbol>
+  </svg>
+
+  <!-- ============ LOADER: SOUNDCHECK ============ -->
+  <div class="loader" id="loader" aria-hidden="true">
+    <div class="loader__inner">
+      <svg class="loader__logo" viewBox="0 0 116 80" aria-hidden="true"><use href="#rv"/></svg>
+      <div class="loader__label">SOUNDCHECK</div>
+      <div class="loader__meter"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+      <div class="loader__count" id="loaderCount">1, 2… probando</div>
+    </div>
+  </div>
+
+  <!-- Barra de progreso tipo VU -->
+  <div class="scroll-vu" aria-hidden="true"><span id="scrollVu"></span></div>
+
+  <!-- ============ NAV ============ -->
+  <header class="nav" id="nav">
+    <a href="#inicio" class="nav__logo" aria-label="Reversiones, inicio">
+      <svg class="nav__rv" viewBox="0 0 116 80" aria-hidden="true"><use href="#rv"/></svg>
+      <span>REVERSIONES</span>
+    </a>
+    <button class="nav__toggle" id="navToggle" aria-expanded="false" aria-controls="navMenu" aria-label="Abrir menú">
+      <span></span><span></span><span></span>
+    </button>
+    <nav class="nav__menu" id="navMenu">
+      <a href="#banda"><i>CH1</i>Banda</a>
+      <a href="#integrantes"><i>CH2</i>Integrantes</a>
+      <a href="#videos"><i>CH3</i>Videos</a>
+      <a href="#fechas"><i>CH4</i>Fechas</a>
+      <a href="#concepto"><i>CH5</i>Concepto</a>
+      <a href="#contratar" class="nav__cta"><i class="rec"></i>Contratar</a>
+    </nav>
+  </header>
+
+  <main>
+    <!-- ============ HERO ============ -->
+    <section class="hero" id="inicio">
+      <canvas id="heroCanvas" class="hero__canvas" aria-hidden="true"></canvas>
+      <div class="hero__grid" aria-hidden="true"></div>
+
+      <div class="hero__content">
+        <div class="hero__badge" aria-hidden="true"><svg class="hero__rv" viewBox="0 0 116 80" aria-hidden="true"><use href="#rv"/></svg></div>
+        <p class="hero__kicker"><span class="led led--on"></span> ON AIR · <span id="heroCity"></span></p>
+        <h1 class="hero__title glitch" data-text="REVERSIONES">REVERSIONES</h1>
+        <p class="hero__subtitle" id="heroSubtitle">Reversiones de Rock Nacional</p>
+        <div class="hero__actions">
+          <a href="#contratar" class="btn btn--primary"><span class="led led--on"></span>Contratá la banda</a>
+          <button class="btn btn--ghost" id="powerBtn" aria-pressed="false">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2v10M5.6 6.6a8 8 0 1 0 12.8 0"/></svg>
+            <span>Probar sonido</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- VU meters analógicos -->
+      <div class="hero__vus" aria-hidden="true">
+        <div class="vu"><div class="vu__scale"><span>-20</span><span>-10</span><span>-5</span><span>0</span><span class="hot">+3</span></div><div class="vu__needle" id="vuL"></div><div class="vu__label">L</div></div>
+        <div class="vu"><div class="vu__scale"><span>-20</span><span>-10</span><span>-5</span><span>0</span><span class="hot">+3</span></div><div class="vu__needle" id="vuR"></div><div class="vu__label">R</div></div>
+      </div>
+
+      <a href="#banda" class="hero__scroll" aria-label="Bajar">
+        <span>SCROLL</span>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+      </a>
+    </section>
+
+    <!-- Cinta animada -->
+    <div class="marquee" aria-hidden="true"><div class="marquee__track" id="marquee"></div></div>
+
+    <!-- ============ BANDA ============ -->
+    <section class="section" id="banda">
+      <div class="container">
+        <header class="section__head reveal">
+          <span class="ch">CH 01 · INPUT</span>
+          <h2>La banda</h2>
+        </header>
+
+        <div class="about">
+          <div class="about__text reveal">
+            <p id="bandDesc"></p>
+            <ul class="about__tags">
+              <li>Fiestas</li><li>Casamientos</li><li>Corporativos</li><li>Bares</li><li>Festivales</li>
+            </ul>
+          </div>
+
+          <div class="about__vinyl reveal" aria-hidden="true">
+            <div class="turntable">
+              <div class="vinyl" id="vinyl">
+                <div class="vinyl__label"><svg class="vinyl__rv" viewBox="0 0 116 80" aria-hidden="true"><use href="#rv"/></svg><small>33⅓ RPM · LADO A</small></div>
+              </div>
+              <div class="tonearm"></div>
+              <div class="turntable__knob knob" data-label="PITCH"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="stats" id="stats"></div>
+      </div>
+    </section>
+
+    <!-- ============ INTEGRANTES (pedalboard) ============ -->
+    <section class="section section--dark" id="integrantes">
+      <div class="container">
+        <header class="section__head reveal">
+          <span class="ch">CH 02 · PEDALBOARD</span>
+          <h2>Integrantes</h2>
+          <p class="section__lead">Cada músico, un pedal con su efecto real. Pisalo para escuchar su instrumento con y sin efecto, y girá las perillas para cambiar el sonido.</p>
+        </header>
+        <div class="pedalboard" id="pedalboard"></div>
+      </div>
+    </section>
+
+    <!-- ============ VIDEOS ============ -->
+    <section class="section" id="videos">
+      <div class="container">
+        <header class="section__head reveal">
+          <span class="ch">CH 03 · MONITOR</span>
+          <h2>Videos destacados</h2>
+        </header>
+        <div class="videos">
+          <div class="monitor reveal" id="featuredVideo"></div>
+          <div class="tapes" id="videoList"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ FECHAS ============ -->
+    <section class="section section--dark" id="fechas">
+      <div class="container">
+        <header class="section__head reveal">
+          <span class="ch">CH 04 · SEQUENCER</span>
+          <h2>Fechas</h2>
+        </header>
+
+        <div class="countdown reveal" id="countdown" hidden>
+          <div class="countdown__label"><span class="led led--on led--red"></span>PRÓXIMO SHOW</div>
+          <div class="countdown__venue" id="cdVenue"></div>
+          <div class="countdown__lcd">
+            <div><b id="cdD">00</b><small>DÍAS</small></div>
+            <div><b id="cdH">00</b><small>HS</small></div>
+            <div><b id="cdM">00</b><small>MIN</small></div>
+            <div><b id="cdS">00</b><small>SEG</small></div>
+          </div>
+        </div>
+
+        <div class="gigs" id="gigs"></div>
+
+        <details class="past reveal" id="pastWrap">
+          <summary>Shows anteriores</summary>
+          <div class="gigs gigs--past" id="pastGigs"></div>
+        </details>
+      </div>
+    </section>
+
+    <!-- ============ CONCEPTO ============ -->
+    <section class="section" id="concepto">
+      <div class="container">
+        <header class="section__head reveal">
+          <span class="ch">CH 05 · SIGNAL CHAIN</span>
+          <h2>¿Qué es una reversión?</h2>
+          <p class="section__lead" id="conceptLead"></p>
+        </header>
+        <div class="chain" id="chain"></div>
+      </div>
+    </section>
+
+    <!-- ============ CONTRATAR ============ -->
+    <section class="section section--console" id="contratar">
+      <div class="container">
+        <header class="section__head reveal">
+          <span class="ch ch--rec">● REC · MASTER BUS</span>
+          <h2>Contratá a Reversiones</h2>
+          <p class="section__lead">Elegí el formato, contanos de tu evento y te pasamos presupuesto.</p>
+        </header>
+
+        <div class="rack" id="formats"></div>
+
+        <div class="booking">
+          <form class="console reveal" id="bookingForm" novalidate>
+            <div class="console__screws" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+            <div class="console__title">
+              <span>BOOKING CONSOLE</span>
+              <span class="console__leds" aria-hidden="true"><i class="led led--on"></i><i class="led led--on led--amber"></i><i class="led"></i></span>
+            </div>
+
+            <div class="console__grid">
+              <label class="field">
+                <span>Nombre</span>
+                <input name="nombre" required autocomplete="name" placeholder="Tu nombre">
+              </label>
+              <label class="field">
+                <span>Teléfono / WhatsApp</span>
+                <input name="telefono" type="tel" required autocomplete="tel" placeholder="11 1234-5678">
+              </label>
+              <label class="field">
+                <span>Email</span>
+                <input name="email" type="email" autocomplete="email" placeholder="vos@mail.com">
+              </label>
+              <label class="field">
+                <span>Tipo de evento</span>
+                <select name="evento" required>
+                  <option value="">Elegí…</option>
+                  <option>Fiesta privada / Cumpleaños</option>
+                  <option>Casamiento</option>
+                  <option>Evento corporativo</option>
+                  <option>Bar / Pub</option>
+                  <option>Festival / Municipio</option>
+                  <option>Otro</option>
+                </select>
+              </label>
+              <label class="field">
+                <span>Fecha del evento</span>
+                <input name="fecha" type="date">
+              </label>
+              <label class="field">
+                <span>Lugar / Localidad</span>
+                <input name="lugar" placeholder="Ciudad, salón, bar…">
+              </label>
+              <label class="field">
+                <span>Formato</span>
+                <select name="formato" id="formatSelect"></select>
+              </label>
+              <div class="field field--fader">
+                <span>Invitados aprox. <output id="guestsOut">150</output></span>
+                <input name="invitados" type="range" min="20" max="1000" step="10" value="150" id="guests" aria-label="Cantidad de invitados">
+              </div>
+              <label class="field field--wide">
+                <span>Contanos más</span>
+                <textarea name="mensaje" rows="4" placeholder="Horarios, temas que no pueden faltar, si hay sonido en el lugar…"></textarea>
+              </label>
+            </div>
+
+            <div class="console__actions">
+              <button type="submit" class="btn btn--primary" data-via="whatsapp">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 0 1-11.8 7L4 20l1-4.1A8 8 0 1 1 20 12z"/></svg>
+                Enviar por WhatsApp
+              </button>
+              <button type="submit" class="btn btn--ghost" data-via="email">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18v12H3zM3 6l9 7 9-7"/></svg>
+                Enviar por email
+              </button>
+            </div>
+            <p class="console__status" id="formStatus" role="status" aria-live="polite"></p>
+          </form>
+
+          <aside class="contact-card reveal">
+            <h3>Contacto directo</h3>
+            <a id="waLink" class="contact-card__row" target="_blank" rel="noopener">
+              <span class="contact-card__ico">WA</span><span id="waText"></span>
+            </a>
+            <a id="mailLink" class="contact-card__row">
+              <span class="contact-card__ico">@</span><span id="mailText"></span>
+            </a>
+            <div class="socials" id="socials"></div>
+            <div class="eq" aria-hidden="true">
+              <div class="eq__band"><input type="range" orient="vertical" min="-12" max="12" value="4" aria-label="EQ 60Hz"><small>60</small></div>
+              <div class="eq__band"><input type="range" orient="vertical" min="-12" max="12" value="2" aria-label="EQ 250Hz"><small>250</small></div>
+              <div class="eq__band"><input type="range" orient="vertical" min="-12" max="12" value="-2" aria-label="EQ 1kHz"><small>1K</small></div>
+              <div class="eq__band"><input type="range" orient="vertical" min="-12" max="12" value="3" aria-label="EQ 4kHz"><small>4K</small></div>
+              <div class="eq__band"><input type="range" orient="vertical" min="-12" max="12" value="6" aria-label="EQ 12kHz"><small>12K</small></div>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer__inner">
+      <svg class="footer__rv" viewBox="0 0 116 80" aria-hidden="true"><use href="#rv"/></svg>
+      <div class="footer__logo">REVERSIONES</div>
+      <p>Reversiones de Rock Nacional · Firmat, Santa Fe · <span id="year"></span></p>
+      <p class="footer__small">Mezclado y masterizado en vivo. Subí el volumen.</p>
+    </div>
+  </footer>
+
+
+  <script src="assets/js/content.js"></script>
+  <script src="assets/js/audio.js"></script>
+  <script src="assets/js/main.js"></script>
+</body>
+</html>

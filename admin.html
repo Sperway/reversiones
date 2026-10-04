@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="es-AR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Reversiones · Panel</title>
+  <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="assets/fonts/bebas-neue.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="assets/css/styles.css">
+  <style>
+    body { padding: 32px 0 80px; }
+    .adm-head { display: flex; flex-wrap: wrap; gap: 16px; justify-content: space-between; align-items: end; margin-bottom: 28px; }
+    .adm-head h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(40px, 7vw, 64px); margin: 8px 0 0; line-height: 1; }
+    .adm-help { color: var(--muted); max-width: 760px; }
+    .adm-help code { color: var(--amber); font-family: var(--font-mono); }
+    .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 20px; }
+    .tabs button { font-family: var(--font-mono); letter-spacing: .1em; text-transform: uppercase; font-size: 13px; padding: 10px 16px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel); cursor: pointer; }
+    .tabs button[aria-selected="true"] { border-color: var(--amber); color: var(--amber); background: var(--amber-soft); }
+    .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 22px; }
+    .rows { display: flex; flex-direction: column; gap: 14px; }
+    .row { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); align-items: end; padding: 16px; border-radius: 12px; background: #0e0f12; border: 1px solid #26272e; position: relative; }
+    .row .field input, .row .field select, .row .field textarea { background: #15161a; }
+    .row__tools { display: flex; gap: 6px; justify-content: flex-end; grid-column: 1 / -1; }
+    .row__tools button { font-family: var(--font-mono); font-size: 12px; padding: 6px 10px; border-radius: 6px; border: 1px solid var(--line); background: transparent; cursor: pointer; color: var(--muted); }
+    .row__tools button:hover { color: var(--text); border-color: var(--muted); }
+    .row__tools .del:hover { color: var(--red); border-color: var(--red); }
+    .thumb { width: 100%; aspect-ratio: 16/9; border-radius: 8px; background: #000 center/cover; display: grid; place-items: center; font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
+    .check { display: flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; padding-bottom: 12px; }
+    .check input { width: 18px; height: 18px; accent-color: var(--amber); }
+    .bar { position: sticky; bottom: 16px; margin-top: 24px; display: flex; flex-wrap: wrap; gap: 12px; align-items: center; padding: 14px; border-radius: 14px; background: rgba(20,21,26,.92); backdrop-filter: blur(10px); border: 1px solid var(--line); box-shadow: var(--shadow); }
+    .bar p { margin: 0; color: var(--muted); font-family: var(--font-mono); font-size: 13px; flex: 1 1 220px; }
+    textarea.json { width: 100%; min-height: 420px; font-family: var(--font-mono); font-size: 13px; background: #0e0f12; color: var(--green); border: 1px solid var(--line); border-radius: 10px; padding: 14px; }
+    .add { margin-top: 14px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="adm-head">
+      <div>
+        <span class="ch">PANEL DE CONTENIDO</span>
+        <h1>Reversiones · Panel</h1>
+      </div>
+      <a class="btn btn--ghost btn--small" href="index.html">← Ver la web</a>
+    </header>
+    <p class="adm-help">
+      Editá videos, fechas, integrantes y contacto. Cuando termines, tocá <b>Descargar content.js</b> y
+      reemplazá el archivo <code>assets/js/content.js</code> del sitio (por ejemplo desde GitHub → “Upload files”).
+      Los cambios se guardan como borrador en este navegador hasta que descargues.
+    </p>
+
+    <div class="tabs" role="tablist">
+      <button role="tab" data-tab="videos" aria-selected="true">Videos</button>
+      <button role="tab" data-tab="fechas" aria-selected="false">Fechas</button>
+      <button role="tab" data-tab="integrantes" aria-selected="false">Integrantes</button>
+      <button role="tab" data-tab="contacto" aria-selected="false">Contacto</button>
+      <button role="tab" data-tab="avanzado" aria-selected="false">Avanzado (JSON)</button>
+    </div>
+
+    <section class="panel" id="panel"></section>
+
+    <div class="bar">
+      <p id="msg">Borrador listo.</p>
+      <button class="btn btn--ghost btn--small" id="reset">Descartar borrador</button>
+      <button class="btn btn--ghost btn--small" id="preview">Vista previa</button>
+      <button class="btn btn--primary btn--small" id="download">Descargar content.js</button>
+    </div>
+  </div>
+
+  <script src="assets/js/content.js"></script>
+  <script src="assets/js/admin.js"></script>
+</body>
+</html>
