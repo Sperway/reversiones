@@ -85,18 +85,25 @@
     return ctx;
   };
 
-  function makeReverb(ctx, seconds) {
+  function makeImpulse(ctx, seconds, curve = 2.5) {
     const rate = ctx.sampleRate;
     const len = Math.floor(rate * seconds);
     const imp = ctx.createBuffer(2, len, rate);
     for (let c = 0; c < 2; c++) {
       const ch = imp.getChannelData(c);
-      for (let i = 0; i < len; i++) ch[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2.5);
+      for (let i = 0; i < len; i++) ch[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, curve);
     }
+    return imp;
+  }
+
+  function makeReverb(ctx, seconds) {
     const conv = ctx.createConvolver();
-    conv.buffer = imp;
+    conv.buffer = makeImpulse(ctx, seconds);
     return conv;
   }
+
+  // Destino de los instrumentos: el master, o la entrada de un pedal
+  const OUT = () => A._dest || A.master;
 
   function distCurve(amount) {
     const n = 2048;
@@ -128,7 +135,7 @@
     o.frequency.exponentialRampToValueAtTime(42, t + 0.12);
     g.gain.setValueAtTime(1.1 * vel, t);
     g.gain.exponentialRampToValueAtTime(0.001, t + 0.42);
-    o.connect(g).connect(A.master);
+    o.connect(g).connect(OUT());
     o.start(t);
     o.stop(t + 0.45);
     // click del parche
@@ -145,7 +152,7 @@
     o.frequency.exponentialRampToValueAtTime(160, t + 0.08);
     g.gain.setValueAtTime(0.5 * vel, t);
     g.gain.exponentialRampToValueAtTime(0.001, t + 0.12);
-    o.connect(g).connect(A.master);
+    o.connect(g).connect(OUT());
     o.start(t);
     o.stop(t + 0.15);
   }
@@ -169,7 +176,7 @@
     g.gain.setValueAtTime(gain, t);
     g.gain.exponentialRampToValueAtTime(0.001, t + dur);
     const p = panner(ctx, pan);
-    src.connect(f).connect(g).connect(p).connect(A.master);
+    src.connect(f).connect(g).connect(p).connect(OUT());
     src.start(t);
     src.stop(t + dur + 0.02);
   }
@@ -193,7 +200,7 @@
     g.gain.exponentialRampToValueAtTime(0.001, t + dur);
     o.connect(f);
     o2.connect(f);
-    f.connect(g).connect(A.master);
+    f.connect(g).connect(OUT());
     o.start(t);
     o2.start(t);
     o.stop(t + dur + 0.05);
@@ -234,7 +241,7 @@
       o.stop(t + dur + 0.05);
       return o;
     });
-    pre.connect(shaper).connect(mid).connect(cab).connect(g).connect(p).connect(A.master);
+    pre.connect(shaper).connect(mid).connect(cab).connect(g).connect(p).connect(OUT());
     return oscs;
   }
 
@@ -259,8 +266,8 @@
       o.connect(f);
       o2.connect(f);
       f.connect(g);
-      g.connect(A.master);
-      g.connect(A.reverb);
+      g.connect(OUT());
+      if (!A._dest) g.connect(A.reverb);
       o.start(t);
       o2.start(t);
       o.stop(t + dur + 0.05);
@@ -301,8 +308,8 @@
       o.connect(bp).connect(ag).connect(sum);
     });
     sum.connect(g);
-    g.connect(A.master);
-    g.connect(A.reverb);
+    g.connect(OUT());
+    if (!A._dest) g.connect(A.reverb);
     o.start(t);
     vib.start(t);
     o.stop(t + total + 0.1);
@@ -367,22 +374,60 @@
   };
 
   /* ---------------- Sonido de cada integrante ---------------- */
-  A.playInstrument = function (type) {
+  // Guitarra limpia (sin distorsión) para que se escuche lo que agrega el pedal
+  function cleanGuitar(t, notes, dur, vol = 0.09, strum = 0.018) {
+    const ctx = A.ctx;
+    notes.forEach((n, i) => {
+      const st = t + i * strum;
+      const o = ctx.createOscillator();
+      const o2 = ctx.createOscillator();
+      const f = ctx.createBiquadFilter();
+      const g = ctx.createGain();
+      o.type = "sawtooth";
+      o2.type = "triangle";
+      o.frequency.value = o2.frequency.value = midi(n);
+      o2.detune.value = 4;
+      f.type = "lowpass";
+      f.frequency.setValueAtTime(5000, st);
+      f.frequency.exponentialRampToValueAtTime(900, st + dur * 0.8);
+      g.gain.setValueAtTime(0.0001, st);
+      g.gain.exponentialRampToValueAtTime(vol, st + 0.005);
+      g.gain.exponentialRampToValueAtTime(0.001, st + dur);
+      o.connect(f);
+      o2.connect(f);
+      f.connect(g).connect(OUT());
+      o.start(st);
+      o2.start(st);
+      o.stop(st + dur + 0.05);
+      o2.stop(st + dur + 0.05);
+    });
+  }
+
+  // Frases de ~2 segundos por instrumento. Con "dest" suenan a través de un pedal.
+  A.playInstrument = function (type, dest) {
     if (!A.init()) return;
-    const t = A.ctx.currentTime + 0.02;
+    A._dest = dest || null;
+    const t = A.ctx.currentTime + 0.03;
     switch (type) {
       case "voz":
-        // Frase melódica descendente
-        voice(t, [71, 71, 69, 67, 64], 0.22);
+        voice(t, [64, 67, 69, 71, 69, 67, 64], 0.26);
         break;
       case "guitarra":
-        guitar(t, 52, 0.25, { vol: 0.2 });
-        guitar(t + 0.3, 52, 0.12, { vol: 0.2 });
-        guitar(t + 0.45, 55, 0.25, { vol: 0.2 });
-        guitar(t + 0.75, 57, 0.7, { vol: 0.2 });
+        if (dest) {
+          // Acordes abiertos en Mi y un arpegio: limpio, para que el pedal haga su trabajo
+          cleanGuitar(t, [40, 47, 52, 55], 0.5);
+          cleanGuitar(t + 0.5, [43, 50, 55, 59], 0.3);
+          cleanGuitar(t + 0.8, [45, 52, 57, 61], 0.6);
+          [52, 56, 59, 64, 59, 56].forEach((n, i) => cleanGuitar(t + 1.3 + i * 0.12, [n], 0.5, 0.1, 0));
+        } else {
+          guitar(t, 52, 0.25, { vol: 0.2 });
+          guitar(t + 0.3, 52, 0.12, { vol: 0.2 });
+          guitar(t + 0.45, 55, 0.25, { vol: 0.2 });
+          guitar(t + 0.75, 57, 0.7, { vol: 0.2 });
+        }
         break;
       case "bajo":
-        [40, 40, 43, 45, 47, 45, 43, 40].forEach((n, i) => bass(t + i * 0.14, n, 0.18));
+        [28, 28, 40, 28, 31, 33, 35, 33, 31, 28].forEach((n, i) => bass(t + i * 0.16, n, 0.2));
         break;
       case "bateria":
         kick(t);
@@ -397,13 +442,317 @@
         kick(t + 1.17);
         break;
       case "teclados":
-        keys(t, [60, 64, 67, 71], 0.5, 0.09);
-        keys(t + 0.5, [57, 60, 64, 67], 0.5, 0.09);
-        keys(t + 1.0, [53, 57, 60, 64], 0.9, 0.09);
+        keys(t, [48, 60, 64, 67, 71], 0.6, 0.07);
+        keys(t + 0.6, [45, 57, 60, 64, 67], 0.6, 0.07);
+        keys(t + 1.2, [41, 53, 57, 60, 64], 1.0, 0.07);
         break;
       default:
         keys(t, [64, 67, 71], 0.6, 0.1);
     }
+    A._dest = null;
+  };
+
+  /* ---------------- Pedales de efecto reales ----------------
+     Cada efecto define 3 perillas (valor 0–1) y cómo arma su cadena
+     de nodos. La interfaz lee "label", "desc" y "knobs" sin crear audio. */
+  const pct = (v) => Math.round(v * 100) + "%";
+  const hz = (f) => (f >= 1000 ? (f / 1000).toFixed(1) + "k" : Math.round(f)) + "Hz";
+  const db = (d) => (d > 0 ? "+" : "") + d.toFixed(0) + "dB";
+  const ramp = (param, v) => param.setTargetAtTime(v, A.ctx.currentTime, 0.02);
+
+  function lfo(ctx, freq, depth, target) {
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.frequency.value = freq;
+    g.gain.value = depth;
+    o.connect(g).connect(target);
+    o.start();
+    return { o, g };
+  }
+
+  const FX = {
+    reverb: {
+      label: "REVERB",
+      desc: "Agrega el espacio de una sala: la señal rebota y se apaga de a poco.",
+      knobs: [
+        { n: "MIX", d: 55, f: pct },
+        { n: "DECAY", d: 45, f: (v) => (0.4 + v * 5.6).toFixed(1) + "s" },
+        { n: "TONE", d: 60, f: (v) => hz(1500 + v * 10500) }
+      ],
+      build(ctx) {
+        const inp = ctx.createGain(), out = ctx.createGain(), dry = ctx.createGain(), wet = ctx.createGain();
+        const conv = ctx.createConvolver(), lp = ctx.createBiquadFilter(), pre = ctx.createDelay(0.1);
+        lp.type = "lowpass";
+        pre.delayTime.value = 0.025; // pre-delay
+        inp.connect(dry).connect(out);
+        inp.connect(pre).connect(conv).connect(lp).connect(wet).connect(out);
+        let timer;
+        return {
+          inp, out,
+          set(i, v) {
+            if (i === 0) {
+              ramp(dry.gain, 1 - v * 0.55);
+              ramp(wet.gain, v * 2.2);
+            }
+            if (i === 1) {
+              const sec = 0.4 + v * 5.6;
+              clearTimeout(timer);
+              if (!conv.buffer) conv.buffer = makeImpulse(ctx, sec);
+              else timer = setTimeout(() => (conv.buffer = makeImpulse(ctx, sec)), 80);
+            }
+            if (i === 2) ramp(lp.frequency, 1500 + v * 10500);
+          }
+        };
+      }
+    },
+    overdrive: {
+      label: "OVERDRIVE",
+      desc: "Satura la señal como un amplificador al límite: más armónicos y más sustain.",
+      knobs: [
+        { n: "LEVEL", d: 60, f: pct },
+        { n: "TONE", d: 55, f: (v) => hz(700 + v * 6300) },
+        { n: "DRIVE", d: 70, f: (v) => db(20 * Math.log10(1 + v * v * 80)) }
+      ],
+      build(ctx) {
+        const inp = ctx.createGain(), out = ctx.createGain(), hp = ctx.createBiquadFilter(), pre = ctx.createGain();
+        const sh = ctx.createWaveShaper(), lp = ctx.createBiquadFilter(), mid = ctx.createBiquadFilter();
+        hp.type = "highpass";
+        hp.frequency.value = 140; // recorta graves antes de saturar, como un Tube Screamer
+        sh.curve = distCurve(12);
+        sh.oversample = "4x";
+        mid.type = "peaking";
+        mid.frequency.value = 720;
+        mid.gain.value = 5;
+        lp.type = "lowpass";
+        inp.connect(hp).connect(pre).connect(sh).connect(mid).connect(lp).connect(out);
+        return {
+          inp, out,
+          set(i, v) {
+            if (i === 0) ramp(out.gain, v * 0.11);
+            if (i === 1) ramp(lp.frequency, 700 + v * 6300);
+            if (i === 2) ramp(pre.gain, 1 + v * v * 80);
+          }
+        };
+      }
+    },
+    chorus: {
+      label: "CHORUS",
+      desc: "Duplica la señal con un leve desafinado que se mueve: suena más ancha y en estéreo.",
+      knobs: [
+        { n: "LEVEL", d: 70, f: pct },
+        { n: "RATE", d: 30, f: (v) => (0.1 + v * 4.9).toFixed(1) + "Hz" },
+        { n: "DEPTH", d: 65, f: pct }
+      ],
+      build(ctx) {
+        const inp = ctx.createGain(), out = ctx.createGain(), dry = ctx.createGain(), wet = ctx.createGain();
+        dry.gain.value = 0.75;
+        wet.gain.value = 0.85;
+        inp.connect(dry).connect(out);
+        const d1 = ctx.createDelay(0.1), d2 = ctx.createDelay(0.1);
+        d1.delayTime.value = 0.018;
+        d2.delayTime.value = 0.026;
+        inp.connect(d1).connect(panner(ctx, -0.8)).connect(wet);
+        inp.connect(d2).connect(panner(ctx, 0.8)).connect(wet);
+        wet.connect(out);
+        const mod = lfo(ctx, 0.8, 0.004, d1.delayTime);
+        const inv = ctx.createGain();
+        inv.gain.value = -1;
+        mod.g.connect(inv).connect(d2.delayTime); // modulación invertida en el canal derecho
+        return {
+          inp, out,
+          set(i, v) {
+            if (i === 0) ramp(out.gain, 0.3 + v * 0.9);
+            if (i === 1) ramp(mod.o.frequency, 0.1 + v * 4.9);
+            if (i === 2) ramp(mod.g.gain, v * 0.007);
+          }
+        };
+      }
+    },
+    lowend: {
+      label: "LOW END",
+      desc: "Realza y comprime los graves: el bajo queda parejo, gordo y con presencia.",
+      knobs: [
+        { n: "LEVEL", d: 60, f: pct },
+        { n: "BOOST", d: 65, f: (v) => db(v * 15) },
+        { n: "GRIT", d: 30, f: pct }
+      ],
+      build(ctx) {
+        const inp = ctx.createGain(), out = ctx.createGain(), shelf = ctx.createBiquadFilter(), scoop = ctx.createBiquadFilter();
+        const comp = ctx.createDynamicsCompressor(), pre = ctx.createGain(), sh = ctx.createWaveShaper(), post = ctx.createGain();
+        shelf.type = "lowshelf";
+        shelf.frequency.value = 110;
+        scoop.type = "peaking";
+        scoop.frequency.value = 450;
+        scoop.Q.value = 1.2;
+        scoop.gain.value = -5;
+        comp.threshold.value = -28;
+        comp.ratio.value = 6;
+        comp.attack.value = 0.01;
+        comp.release.value = 0.12;
+        sh.curve = distCurve(6);
+        inp.connect(shelf).connect(scoop).connect(comp).connect(pre).connect(sh).connect(post).connect(out);
+        const st = { level: 0.6, grit: 0.3 };
+        const upd = () => {
+          ramp(pre.gain, 1 + st.grit * 10);
+          ramp(post.gain, (st.level * 0.46) / (1 + st.grit * 3));
+        };
+        return {
+          inp, out,
+          set(i, v) {
+            if (i === 0) (st.level = v), upd();
+            if (i === 1) ramp(shelf.gain, v * 15);
+            if (i === 2) (st.grit = v), upd();
+          }
+        };
+      }
+    },
+    thunder: {
+      label: "THUNDER",
+      desc: "Compresión de bus de batería y sala grande: golpes con más punch y ambiente de estadio.",
+      knobs: [
+        { n: "LEVEL", d: 65, f: pct },
+        { n: "PUNCH", d: 70, f: (v) => (2 + v * 10).toFixed(0) + ":1" },
+        { n: "ROOM", d: 50, f: pct }
+      ],
+      build(ctx) {
+        const inp = ctx.createGain(), out = ctx.createGain(), comp = ctx.createDynamicsCompressor(), makeup = ctx.createGain();
+        const shelf = ctx.createBiquadFilter(), conv = ctx.createConvolver(), room = ctx.createGain();
+        comp.release.value = 0.1;
+        shelf.type = "lowshelf";
+        shelf.frequency.value = 90;
+        shelf.gain.value = 5;
+        conv.buffer = makeImpulse(ctx, 1.6, 3);
+        inp.connect(comp).connect(shelf).connect(makeup).connect(out);
+        makeup.connect(conv).connect(room).connect(out);
+        return {
+          inp, out,
+          set(i, v) {
+            if (i === 0) ramp(out.gain, v * 0.6);
+            if (i === 1) {
+              ramp(comp.threshold, -8 - v * 30);
+              ramp(comp.ratio, 2 + v * 10);
+              comp.attack.value = 0.002 + (1 - v) * 0.02; // ataque lento deja pasar el transitorio
+              ramp(makeup.gain, 1 + v * 1.8);
+            }
+            if (i === 2) ramp(room.gain, v * 1.1);
+          }
+        };
+      }
+    },
+    synth: {
+      label: "SYNTH",
+      desc: "Filtro resonante que se abre y se cierra solo, con eco rítmico: textura de sintetizador.",
+      knobs: [
+        { n: "LEVEL", d: 60, f: pct },
+        { n: "CUTOFF", d: 40, f: (v) => hz(200 + v * v * 4800) },
+        { n: "RESO", d: 60, f: (v) => "Q" + (0.7 + v * 18).toFixed(1) }
+      ],
+      build(ctx) {
+        const inp = ctx.createGain(), out = ctx.createGain(), f = ctx.createBiquadFilter();
+        const dl = ctx.createDelay(1), fb = ctx.createGain(), echo = ctx.createGain();
+        f.type = "lowpass";
+        const sweep = lfo(ctx, 1.6, 600, f.frequency);
+        dl.delayTime.value = (60 / 118 / 2) * 1.5; // corchea con punto
+        fb.gain.value = 0.35;
+        echo.gain.value = 0.35;
+        inp.connect(f).connect(out);
+        f.connect(dl).connect(fb).connect(dl);
+        dl.connect(echo).connect(out);
+        return {
+          inp, out,
+          set(i, v) {
+            if (i === 0) ramp(out.gain, v * 0.8);
+            if (i === 1) {
+              const base = 200 + v * v * 4800;
+              ramp(f.frequency, base);
+              ramp(sweep.g.gain, base * 0.85);
+            }
+            if (i === 2) ramp(f.Q, 0.7 + v * 18);
+          }
+        };
+      }
+    },
+    delay: {
+      label: "DELAY",
+      desc: "Repite la señal como un eco que se va apagando.",
+      knobs: [
+        { n: "MIX", d: 45, f: pct },
+        { n: "TIME", d: 40, f: (v) => Math.round(80 + v * 720) + "ms" },
+        { n: "REPEAT", d: 45, f: pct }
+      ],
+      build(ctx) {
+        const inp = ctx.createGain(), out = ctx.createGain(), dl = ctx.createDelay(1.5), fb = ctx.createGain(), wet = ctx.createGain(), lp = ctx.createBiquadFilter();
+        lp.type = "lowpass";
+        lp.frequency.value = 3500; // repeticiones más oscuras, como un delay analógico
+        inp.connect(out);
+        inp.connect(dl).connect(lp).connect(fb).connect(dl);
+        lp.connect(wet).connect(out);
+        return {
+          inp, out,
+          set(i, v) {
+            if (i === 0) ramp(wet.gain, v * 1.2);
+            if (i === 1) ramp(dl.delayTime, 0.08 + v * 0.72);
+            if (i === 2) ramp(fb.gain, v * 0.85);
+          }
+        };
+      }
+    },
+    tremolo: {
+      label: "TREMOLO",
+      desc: "Sube y baja el volumen rítmicamente, como los amplificadores vintage.",
+      knobs: [
+        { n: "LEVEL", d: 70, f: pct },
+        { n: "RATE", d: 45, f: (v) => (1 + v * 13).toFixed(1) + "Hz" },
+        { n: "DEPTH", d: 75, f: pct }
+      ],
+      build(ctx) {
+        const inp = ctx.createGain(), out = ctx.createGain(), amp = ctx.createGain();
+        const mod = lfo(ctx, 6, 0.4, amp.gain);
+        inp.connect(amp).connect(out);
+        return {
+          inp, out,
+          set(i, v) {
+            if (i === 0) ramp(out.gain, v * 1.4);
+            if (i === 1) ramp(mod.o.frequency, 1 + v * 13);
+            if (i === 2) {
+              ramp(amp.gain, 1 - v / 2);
+              ramp(mod.g.gain, v / 2);
+            }
+          }
+        };
+      }
+    }
+  };
+  A.FX = FX;
+
+  /* Crea un pedal: entrada -> [bypass | efecto] -> analizador -> master */
+  A.makePedal = function (type, values) {
+    if (!A.init()) return null;
+    const ctx = A.ctx;
+    const def = FX[type] || FX.reverb;
+    const fx = def.build(ctx);
+    const input = ctx.createGain(), dry = ctx.createGain(), wet = ctx.createGain(), post = ctx.createGain();
+    const analyser = ctx.createAnalyser();
+    analyser.fftSize = 256;
+    input.connect(dry).connect(post);
+    input.connect(fx.inp);
+    fx.out.connect(wet).connect(post);
+    post.connect(analyser).connect(A.master);
+    dry.gain.value = 1;
+    wet.gain.value = 0;
+    def.knobs.forEach((k, i) => fx.set(i, values && values[i] != null ? values[i] : k.d / 100));
+    const pedal = {
+      on: false,
+      set: (i, v) => fx.set(i, v),
+      setOn(on) {
+        pedal.on = on;
+        ramp(dry.gain, on ? 0 : 1);
+        ramp(wet.gain, on ? 1 : 0);
+      },
+      play: (instrument) => A.playInstrument(instrument, input),
+      level: () => rms(analyser)
+    };
+    return pedal;
   };
 
   // Click sutil para interacciones (knobs, botones)
@@ -424,10 +773,11 @@
   const tmp = new Float32Array(512);
   function rms(an) {
     if (!an) return 0;
+    const n = Math.min(an.fftSize, tmp.length);
     an.getFloatTimeDomainData(tmp);
     let s = 0;
-    for (let i = 0; i < tmp.length; i++) s += tmp[i] * tmp[i];
-    return Math.sqrt(s / tmp.length);
+    for (let i = 0; i < n; i++) s += tmp[i] * tmp[i];
+    return Math.sqrt(s / n);
   }
   A.levels = function () {
     return { l: rms(A.analyserL), r: rms(A.analyserR) };

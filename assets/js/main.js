@@ -342,11 +342,23 @@
   };
   const PEDAL_COLORS = ["#e63946", "#ffb000", "#22d3ee", "#7c3aed", "#39d98a", "#ff6b9d", "#f97316"];
 
+  // Si no se indica "fx", se deduce del nombre del pedal o del instrumento
+  const FX_BY_INSTRUMENT = { voz: "reverb", guitarra: "overdrive", bajo: "lowend", bateria: "thunder", teclados: "synth", otro: "delay" };
+  const FXDEFS = (Audio && Audio.FX) || {};
+  const fxFor = (m) => {
+    const k = String(m.fx || m.efecto || "").toLowerCase().replace(/\s+/g, "");
+    return FXDEFS[k] ? k : FX_BY_INSTRUMENT[m.instrumento] || "reverb";
+  };
+
   const board = $("#pedalboard");
   (DATA.integrantes || []).forEach((m, i) => {
     const color = PEDAL_COLORS[i % PEDAL_COLORS.length];
     const inst = ICONS[m.instrumento] ? m.instrumento : "otro";
     const photo = safeUrl(m.foto) || (m.foto && !/^[a-z]+:/i.test(m.foto) ? m.foto : "");
+    const fxKey = fxFor(m);
+    const fxDef = FXDEFS[fxKey] || { label: fxKey.toUpperCase(), desc: "", knobs: [{ n: "VOL", d: 50 }, { n: "TONE", d: 50 }, { n: "GAIN", d: 50 }] };
+    const vals = fxDef.knobs.map((k) => k.d / 100);
+    const ch = String(i + 1).padStart(2, "0");
     const el = document.createElement("article");
     el.className = "pedal reveal";
     el.style.setProperty("--pedal", color);
@@ -354,37 +366,89 @@
     el.innerHTML = `
       <div class="pedal__jacks" aria-hidden="true"><i></i><i></i></div>
       <div class="pedal__knobs">
-        <div class="knob knob--sm" data-label="VOL"></div>
-        <div class="knob knob--sm" data-label="TONE"></div>
-        <div class="knob knob--sm" data-label="GAIN"></div>
+        ${fxDef.knobs.map((k) => `<div class="knob knob--sm" data-label="${esc(k.n)}" data-value="${k.d}"></div>`).join("")}
       </div>
       <div class="pedal__brand">
         <span class="led pedal__led"></span>
-        <span class="pedal__fx">${esc(m.efecto || m.instrumento)}</span>
+        <span class="pedal__fx">${esc(fxDef.label)}</span>
       </div>
+      <p class="pedal__fxdesc">${esc(fxDef.desc)}</p>
       <div class="pedal__avatar">
         ${photo ? `<img src="${esc(photo)}" alt="${esc(m.nombre)}" loading="lazy">` : `<div class="pedal__icon" aria-hidden="true">${ICONS[inst]}</div>`}
       </div>
       <h3 class="pedal__name">${esc(m.nombre)}</h3>
       <p class="pedal__role">${esc(m.rol)}</p>
-      <div class="pedal__lcd" aria-live="polite"><span>${esc(m.equipo || m.rol)}</span></div>
-      <button class="pedal__switch" aria-pressed="false" aria-label="Escuchar a ${esc(m.nombre)} (${esc(m.rol)})">
-        <span class="pedal__switch-cap"></span>
-      </button>
-      <span class="pedal__model">REV-${String(i + 1).padStart(2, "0")} · ${esc((m.instrumento || "").toUpperCase())}</span>
+      <dl class="pedal__spec">
+        <div><dt>CANAL</dt><dd>CH ${ch}${m.equipo ? " · " + esc(m.equipo) : ""}</dd></div>
+        ${m.rango ? `<div><dt>RANGO</dt><dd>${esc(m.rango)}</dd></div>` : ""}
+        ${m.funcion ? `<div><dt>EN LA MEZCLA</dt><dd>${esc(m.funcion)}</dd></div>` : ""}
+      </dl>
+      <div class="pedal__lcd">
+        <div class="pedal__lcd-top">
+          <b class="pedal__state" aria-live="polite">BYPASS</b>
+          <span class="pedal__meter" aria-hidden="true">${"<i></i>".repeat(10)}</span>
+        </div>
+        <div class="pedal__params"></div>
+      </div>
+      <div class="pedal__controls">
+        <button class="pedal__switch" aria-pressed="false" aria-label="Activar ${esc(fxDef.label)} y escuchar a ${esc(m.rol)}">
+          <span class="pedal__switch-cap"></span>
+        </button>
+        <button class="pedal__replay" aria-label="Volver a escuchar">▶</button>
+      </div>
+      <span class="pedal__hint">Pisalo: escuchá con y sin efecto</span>
+      <span class="pedal__model">REV-${ch} · ${esc(fxKey.toUpperCase())}</span>
     `;
-    const lcd = $(".pedal__lcd span", el);
+
+    const state = $(".pedal__state", el);
+    const params = $(".pedal__params", el);
+    const meter = $$(".pedal__meter i", el);
     const sw = $(".pedal__switch", el);
+    let audioPedal = null;
+    let meterUntil = 0;
+
+    const showParams = () => {
+      params.textContent = fxDef.knobs.map((k, j) => `${k.n} ${k.f ? k.f(vals[j]) : Math.round(vals[j] * 100)}`).join(" · ");
+    };
+    showParams();
+
+    const runMeter = () => {
+      const lv = audioPedal ? audioPedal.level() : 0;
+      const n = Math.min(10, Math.round(lv * 40));
+      meter.forEach((seg, j) => seg.classList.toggle("is-lit", j < n));
+      if (performance.now() < meterUntil) requestAnimationFrame(runMeter);
+      else meter.forEach((seg) => seg.classList.remove("is-lit"));
+    };
+
+    const play = () => {
+      if (!Audio) return;
+      if (!audioPedal) audioPedal = Audio.makePedal(fxKey, vals);
+      if (!audioPedal) return;
+      audioPedal.setOn(el.classList.contains("is-on"));
+      audioPedal.play(m.instrumento);
+      const already = performance.now() < meterUntil;
+      meterUntil = performance.now() + 3200;
+      if (!already) requestAnimationFrame(runMeter);
+    };
+
     sw.addEventListener("click", () => {
       const on = !el.classList.contains("is-on");
       el.classList.toggle("is-on", on);
       sw.setAttribute("aria-pressed", String(on));
-      lcd.textContent = on ? m.bio || m.equipo : m.equipo || m.rol;
-      lcd.parentElement.classList.toggle("is-scrolling", on && lcd.textContent.length > 28);
-      if (on && Audio) Audio.playInstrument(m.instrumento);
+      state.textContent = on ? `● ${fxDef.label} ON` : "BYPASS";
+      play();
     });
+    $(".pedal__replay", el).addEventListener("click", play);
+
     board.appendChild(el);
-    $$(".knob", el).forEach(initKnob);
+    $$(".knob", el).forEach((k, j) => {
+      initKnob(k);
+      k.addEventListener("knob", (e) => {
+        vals[j] = e.detail / 100;
+        showParams();
+        if (audioPedal) audioPedal.set(j, vals[j]);
+      });
+    });
   });
 
   /* ---------------- VIDEOS ---------------- */

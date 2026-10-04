@@ -33,7 +33,7 @@ window.REVERSIONES = {
     // Si queda vacío, el formulario abre WhatsApp o el cliente de correo.
     formspree: "",
     redes: {
-      instagram: "https://instagram.com/",
+      instagram: "https://instagram.com/reversion.es",
       youtube: "https://youtube.com/",
       facebook: "https://facebook.com/",
       tiktok: "https://tiktok.com/",
@@ -42,61 +42,70 @@ window.REVERSIONES = {
   },
 
   /* ---------- INTEGRANTES ----------
-     instrumento: voz | guitarra | bajo | bateria | teclados | otro
+     instrumento: voz | guitarra | bajo | bateria | teclados | otro  (define el sonido de demo)
+     fx: efecto REAL que aplica el pedal:
+         reverb | overdrive | chorus | lowend | thunder | synth | delay | tremolo
+     rango: frecuencias que ocupa en la mezcla · funcion: qué aporta al sonido de la banda
      foto: ruta a una imagen (ej: "assets/img/integrantes/juan.jpg") o "" para usar ilustración. */
   integrantes: [
     {
       nombre: "Nombre Apellido",
       rol: "Voz principal",
       instrumento: "voz",
-      efecto: "REVERB",
-      equipo: "Shure SM58 · In-ear Sennheiser",
-      bio: "La voz que hace cantar a todo el lugar, de la primera estrofa al último estribillo.",
+      fx: "reverb",
+      equipo: "Shure SM58",
+      rango: "100 Hz – 1,2 kHz",
+      funcion: "Lleva la melodía y la letra. Va al centro y al frente de la mezcla.",
       foto: ""
     },
     {
       nombre: "Nombre Apellido",
       rol: "Guitarra líder",
       instrumento: "guitarra",
-      efecto: "OVERDRIVE",
-      equipo: "Stratocaster · Marshall JCM800",
-      bio: "Riffs, solos y feedback controlado. El responsable del volumen en 11.",
+      fx: "overdrive",
+      equipo: "Stratocaster · Marshall",
+      rango: "80 Hz – 5 kHz",
+      funcion: "Riffs y solos en los medios-agudos: le da filo y corta la mezcla.",
       foto: ""
     },
     {
       nombre: "Nombre Apellido",
       rol: "Guitarra rítmica / Coros",
       instrumento: "guitarra",
-      efecto: "CHORUS",
-      equipo: "Telecaster · Fender Hot Rod",
-      bio: "Los acordes que sostienen todo y las armonías que se te pegan.",
+      fx: "chorus",
+      equipo: "Telecaster · Fender",
+      rango: "80 Hz – 5 kHz",
+      funcion: "Colchón de acordes abierto en estéreo: rellena los costados de la mezcla.",
       foto: ""
     },
     {
       nombre: "Nombre Apellido",
       rol: "Bajo",
       instrumento: "bajo",
-      efecto: "LOW END",
-      equipo: "Jazz Bass · Ampeg SVT",
-      bio: "Frecuencias graves que se sienten en el pecho antes que en los oídos.",
+      fx: "lowend",
+      equipo: "Jazz Bass · Ampeg",
+      rango: "40 Hz – 400 Hz",
+      funcion: "Une el bombo con la armonía: es el piso de graves que se siente en el pecho.",
       foto: ""
     },
     {
       nombre: "Nombre Apellido",
       rol: "Batería",
       instrumento: "bateria",
-      efecto: "THUNDER",
-      equipo: "Pearl Export · Platos Zildjian",
-      bio: "Metrónomo humano con alma de trueno. 4/4 y a la cancha.",
+      fx: "thunder",
+      equipo: "Pearl · Zildjian",
+      rango: "40 Hz – 16 kHz",
+      funcion: "Marca el pulso: bombo en los graves, redoblante en los medios, platos arriba.",
       foto: ""
     },
     {
       nombre: "Nombre Apellido",
       rol: "Teclados / Sintes",
       instrumento: "teclados",
-      efecto: "SYNTH",
-      equipo: "Nord Stage · Korg Minilogue",
-      bio: "Pianos, órganos y sintes ochentosos: las texturas que le dan otro color a cada reversión.",
+      fx: "synth",
+      equipo: "Nord · Korg",
+      rango: "30 Hz – 8 kHz",
+      funcion: "Pianos, pads y sintes: las texturas que cambian el color de cada reversión.",
       foto: ""
     }
   ],

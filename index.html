@@ -14,10 +14,15 @@
   <link rel="stylesheet" href="assets/css/styles.css">
 </head>
 <body>
+  <!-- Logo RV (definido una vez, se reutiliza con <use>) -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="rv" viewBox="0 0 116 80"><path fill-rule="evenodd" d="M0 0H44Q60 0 60 16V26Q60 39 47 42L61 80H44L31 44H16V80H0ZM16 13H41Q45 13 45 17V27Q45 31 41 31H16Z"/><path d="M64 11H78L88.5 62L99 11H113L96 80H81Z"/></symbol>
+  </svg>
 
   <!-- ============ LOADER: SOUNDCHECK ============ -->
   <div class="loader" id="loader" aria-hidden="true">
     <div class="loader__inner">
+      <svg class="loader__logo" viewBox="0 0 116 80" aria-hidden="true"><use href="#rv"/></svg>
       <div class="loader__label">SOUNDCHECK</div>
       <div class="loader__meter"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
       <div class="loader__count" id="loaderCount">1, 2… probando</div>
@@ -30,7 +35,7 @@
   <!-- ============ NAV ============ -->
   <header class="nav" id="nav">
     <a href="#inicio" class="nav__logo" aria-label="Reversiones, inicio">
-      <svg viewBox="0 0 40 24" class="nav__wave" aria-hidden="true"><path d="M0 12 Q4 2 8 12 T16 12 T24 12 T32 12 T40 12"/></svg>
+      <svg class="nav__rv" viewBox="0 0 116 80" aria-hidden="true"><use href="#rv"/></svg>
       <span>REVERSIONES</span>
     </a>
     <button class="nav__toggle" id="navToggle" aria-expanded="false" aria-controls="navMenu" aria-label="Abrir menú">
@@ -53,6 +58,7 @@
       <div class="hero__grid" aria-hidden="true"></div>
 
       <div class="hero__content">
+        <div class="hero__badge" aria-hidden="true"><svg class="hero__rv" viewBox="0 0 116 80" aria-hidden="true"><use href="#rv"/></svg></div>
         <p class="hero__kicker"><span class="led led--on"></span> ON AIR · <span id="heroCity"></span></p>
         <h1 class="hero__title glitch" data-text="REVERSIONES">REVERSIONES</h1>
         <p class="hero__subtitle" id="heroSubtitle">Reversiones de Rock Nacional</p>
@@ -99,7 +105,7 @@
           <div class="about__vinyl reveal" aria-hidden="true">
             <div class="turntable">
               <div class="vinyl" id="vinyl">
-                <div class="vinyl__label"><span>REVERSIONES</span><small>33⅓ RPM · LADO A</small></div>
+                <div class="vinyl__label"><svg class="vinyl__rv" viewBox="0 0 116 80" aria-hidden="true"><use href="#rv"/></svg><small>33⅓ RPM · LADO A</small></div>
               </div>
               <div class="tonearm"></div>
               <div class="turntable__knob knob" data-label="PITCH"></div>
@@ -117,7 +123,7 @@
         <header class="section__head reveal">
           <span class="ch">CH 02 · PEDALBOARD</span>
           <h2>Integrantes</h2>
-          <p class="section__lead">Cada músico, un pedal. Pisá el footswitch para escucharlo y conocerlo.</p>
+          <p class="section__lead">Cada músico, un pedal con su efecto real. Pisalo para escuchar su instrumento con y sin efecto, y girá las perillas para cambiar el sonido.</p>
         </header>
         <div class="pedalboard" id="pedalboard"></div>
       </div>
@@ -280,6 +286,7 @@
 
   <footer class="footer">
     <div class="container footer__inner">
+      <svg class="footer__rv" viewBox="0 0 116 80" aria-hidden="true"><use href="#rv"/></svg>
       <div class="footer__logo">REVERSIONES</div>
       <p>Reversiones de Rock Nacional · Firmat, Santa Fe · <span id="year"></span></p>
       <p class="footer__small">Mezclado y masterizado en vivo. Subí el volumen.</p>

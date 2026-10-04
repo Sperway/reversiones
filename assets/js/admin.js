@@ -66,16 +66,17 @@
     },
     integrantes: {
       title: "Integrantes",
-      help: "Cada integrante aparece como un pedal. La foto es opcional (ruta dentro del sitio, ej: assets/img/integrantes/juan.jpg).",
-      empty: { nombre: "", rol: "", instrumento: "guitarra", efecto: "", equipo: "", bio: "", foto: "" },
+      help: "Cada integrante aparece como un pedal con un efecto real. La foto es opcional (ruta dentro del sitio, ej: assets/img/integrantes/juan.jpg).",
+      empty: { nombre: "", rol: "", instrumento: "guitarra", fx: "overdrive", equipo: "", rango: "", funcion: "", foto: "" },
       fields: [
         { k: "nombre", label: "Nombre" },
         { k: "rol", label: "Rol" },
         { k: "instrumento", label: "Instrumento (sonido)", type: "select", options: ["voz", "guitarra", "bajo", "bateria", "teclados", "otro"] },
-        { k: "efecto", label: "Nombre del pedal" },
+        { k: "fx", label: "Efecto del pedal", type: "select", options: ["reverb", "overdrive", "chorus", "lowend", "thunder", "synth", "delay", "tremolo"] },
         { k: "equipo", label: "Equipo" },
+        { k: "rango", label: "Rango de frecuencias" },
         { k: "foto", label: "Foto (ruta o URL)" },
-        { k: "bio", label: "Bio corta", type: "textarea" }
+        { k: "funcion", label: "Qué aporta a la mezcla", type: "textarea" }
       ]
     }
   };
