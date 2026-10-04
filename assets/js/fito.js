@@ -107,6 +107,20 @@
 
   /* ---------------- Cómo va a ser ---------------- */
   $("#descripcion").textContent = EV.descripcion || "";
+  // Setlist secreto: los temas se descubren en vivo (títulos tapados)
+  if (EV.setlistSecreto || !(EV.cronograma || []).length) {
+    $("#cronograma").outerHTML = `
+      <div class="secret reveal">
+        <div class="secret__head">
+          <span class="secret__seal">Setlist secreto</span>
+          <span class="secret__side">Lado A · Lado B</span>
+        </div>
+        <ol class="secret__list">${[62, 48, 74, 55, 68, 42, 60, 51]
+          .map((w, i) => `<li><span class="secret__n">${String(i + 1).padStart(2, "0")}</span><span class="secret__bar" style="--w:${w}%"></span><span class="secret__q">?</span></li>`)
+          .join("")}</ol>
+        <p class="secret__foot">El repertorio <b>se descubre en vivo</b>. Vení a cantarlo.</p>
+      </div>`;
+  } else
   $("#cronograma").innerHTML = (EV.cronograma || [])
     .map(
       (c) => `
