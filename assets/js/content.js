@@ -12,6 +12,7 @@ window.REVERSIONES = {
     ciudad: "Firmat, Santa Fe, Argentina",
     descripcion:
       "Somos Reversiones, una banda de Firmat, Santa Fe. No hacemos covers: hacemos reversiones. Tomamos los clásicos del rock nacional, los desarmamos pista por pista y los volvemos a armar con nuestro sonido, para que los temas que todos cantan suenen como nunca los escuchaste. Fiestas, bares, eventos, casamientos y festivales.",
+    // Contadores de "La banda" (se reemplazan por la pestaña "Datos" de la planilla, si existe)
     stats: [
       { valor: 150, sufijo: "+", label: "Shows en vivo" },
       { valor: 80, sufijo: "+", label: "Temas reversionados" },
@@ -127,6 +128,7 @@ window.REVERSIONES = {
      Link de la planilla compartida como "Cualquier persona con el enlace: Lector".
      Pestaña "Fechas": Fecha | Hora | Lugar | Ciudad | Entradas | Estado  (fecha DD/MM/AAAA)
      Pestaña "Videos": Link | Título | Lugar | Destacado  (Destacado: "sí" en el que va grande)
+     Pestaña "Datos": Dato | Número  (los contadores de "La banda"; ej: Shows en vivo | 150+)
      La web la lee cada vez que alguien entra. */
   planilla: "",
 

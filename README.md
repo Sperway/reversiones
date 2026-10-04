@@ -21,12 +21,13 @@ Es un sitio **estático** (HTML + CSS + JS, sin build): se puede publicar gratis
 Todo el contenido está en **`assets/js/content.js`**: videos, integrantes, tema, concepto, cinta animada, formatos y datos de contacto. Las **fechas** y los **videos nuevos** se cargan desde una planilla de Google (ver abajo).
 
 ### Fechas y videos desde Google Sheets (sin tocar código)
-Una sola planilla con **dos pestañas**:
+Una sola planilla con **tres pestañas**:
 
 | Pestaña | Columnas (fila 1) |
 |---|---|
 | **Fechas** | `Fecha` (DD/MM/AAAA) · `Hora` (22:00) · `Lugar` · `Ciudad` · `Entradas` (link, opcional) · `Estado` (ej. "Agotado", opcional) |
 | **Videos** | `Link` (de YouTube) · `Título` · `Lugar` · `Destacado` ("sí" en el que va grande) |
+| **Datos** | `Dato` · `Número` (los contadores de "La banda", ej. `Shows en vivo` · `150+`) |
 
 1. **Compartir → Acceso general → Cualquier persona con el enlace → Lector.**
 2. Pegar el link de la planilla en `planilla` dentro de `content.js` (una sola vez).

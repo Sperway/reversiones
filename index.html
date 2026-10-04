@@ -220,10 +220,13 @@
         <header class="section__head reveal">
           <span class="ch ch--rec">● REC · MASTER BUS</span>
           <h2>Contratá a Reversiones</h2>
-          <p class="section__lead">Elegí el formato, contanos de tu evento y te pasamos presupuesto.</p>
+          <p class="section__lead">Contanos de tu evento y te pasamos presupuesto.</p>
         </header>
 
+        <!-- Formatos de show (Acústico / Full Band / Festival): ocultos por el momento.
+             Para volver a mostrarlos, descomentar esta línea y el campo "Formato" del formulario.
         <div class="rack" id="formats"></div>
+        -->
 
         <div class="booking">
           <form class="console reveal" id="bookingForm" novalidate>
@@ -266,11 +269,13 @@
                 <span>Lugar / Localidad</span>
                 <input name="lugar" placeholder="Ciudad, salón, bar…">
               </label>
+              <!-- Campo "Formato" oculto junto con los formatos de show
               <label class="field">
                 <span>Formato</span>
                 <select name="formato" id="formatSelect"></select>
               </label>
-              <div class="field field--fader">
+              -->
+              <div class="field field--fader field--wide">
                 <span>Invitados aprox. <output id="guestsOut">150</output></span>
                 <input name="invitados" type="range" min="20" max="1000" step="10" value="150" id="guests" aria-label="Cantidad de invitados">
               </div>
