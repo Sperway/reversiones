@@ -4,14 +4,7 @@
 (function () {
   "use strict";
 
-  let DATA = window.REVERSIONES || {};
-  // Vista previa del borrador hecho en admin.html (index.html?preview=1)
-  if (/[?&]preview=1/.test(location.search)) {
-    try {
-      const draft = JSON.parse(localStorage.getItem("reversiones-draft"));
-      if (draft) DATA = draft;
-    } catch (e) {}
-  }
+  const DATA = window.REVERSIONES || {};
   const Audio = window.RevAudio;
   const $ = (s, el = document) => el.querySelector(s);
   const $$ = (s, el = document) => Array.from(el.querySelectorAll(s));
@@ -127,6 +120,36 @@
   let vuValL = 0,
     vuValR = 0;
 
+  function pulseBeat() {
+    document.body.classList.add("beat");
+    setTimeout(() => document.body.classList.remove("beat"), 90);
+  }
+
+  // Con un tema real no hay secuenciador: detecta los golpes por la energía de los graves
+  let lowAvg = 0,
+    lastBeat = 0,
+    lastTimeTxt = "";
+  const fmtTime = (sec) => (isFinite(sec) ? Math.floor(sec / 60) + ":" + String(Math.floor(sec % 60)).padStart(2, "0") : "--:--");
+  function detectBeat(t) {
+    let low = 0;
+    for (let k = 1; k <= 5; k++) low += freqData[k];
+    low /= 5;
+    if (low > lowAvg * 1.18 && low > 140 && t - lastBeat > 260) {
+      lastBeat = t;
+      pulseBeat();
+    }
+    lowAvg = lowAvg * 0.94 + low * 0.06;
+    const tt = Audio.trackTime();
+    if (tt) {
+      const txt = fmtTime(tt.current) + " / " + fmtTime(tt.duration);
+      if (txt !== lastTimeTxt) {
+        lastTimeTxt = txt;
+        $("#npTime").textContent = txt;
+        $("#npBar").style.transform = `scaleX(${tt.duration ? tt.current / tt.duration : 0})`;
+      }
+    }
+  }
+
   function drawHero(t) {
     requestAnimationFrame(drawHero);
     if (!heroVisible) return;
@@ -140,6 +163,7 @@
     const maxH = H * (W < 700 ? 0.26 : 0.34);
 
     if (live) Audio.analyser.getByteFrequencyData(freqData);
+    if (live && Audio.trackMode) detectBeat(t);
 
     for (let i = 0; i < bars; i++) {
       let v;
@@ -221,24 +245,31 @@
   }
   requestAnimationFrame(drawHero);
 
-  // Botón "Probar sonido"
+  // Botón del inicio: tema real de la banda (si está cargado) o loop sintetizado
   const powerBtn = $("#powerBtn");
+  const tema = DATA.tema || {};
+  const hasTrack = !!String(tema.archivo || "").trim() && !/^\s*javascript:/i.test(tema.archivo);
+  const btnLabel = (on) => (on ? (hasTrack ? "Pausar" : "Cortar sonido") : hasTrack ? "Escuchá a Reversiones" : "Probar sonido");
+  const nowPlaying = $("#nowPlaying");
   if (Audio) {
-    powerBtn.addEventListener("click", () => {
-      const on = Audio.toggle();
-      powerBtn.setAttribute("aria-pressed", String(!!on));
-      powerBtn.querySelector("span").textContent = on ? "Cortar sonido" : "Probar sonido";
-    });
+    if (hasTrack) {
+      Audio.setTrack(tema.archivo.trim());
+      $("#npTitle").textContent = tema.titulo || "Reversiones";
+      $("#npDetail").textContent = tema.detalle || "";
+    }
+    powerBtn.querySelector("span").textContent = btnLabel(false);
+    powerBtn.addEventListener("click", () => Audio.toggle());
     Audio.on((type, data) => {
       if (type === "state") {
         document.body.classList.toggle("is-playing", data);
+        powerBtn.setAttribute("aria-pressed", String(!!data));
+        powerBtn.querySelector("span").textContent = btnLabel(data);
+        if (hasTrack) nowPlaying.hidden = false;
+        nowPlaying.classList.toggle("is-paused", !data);
       }
       if (type === "step" && data.step % 4 === 0) {
         const delay = Math.max(0, (data.time - Audio.ctx.currentTime) * 1000);
-        setTimeout(() => {
-          document.body.classList.add("beat");
-          setTimeout(() => document.body.classList.remove("beat"), 90);
-        }, delay);
+        setTimeout(pulseBeat, delay);
       }
     });
   } else {
@@ -249,6 +280,33 @@
   const mq = $("#marquee");
   const mqItems = (DATA.cinta || ["Rock nacional", "Reversiones", "En vivo"]).map((a) => `<span>${esc(a)}</span><i>✦</i>`).join("");
   mq.innerHTML = mqItems + mqItems;
+
+  /* ---------------- EVENTO ESPECIAL (banner a la subpágina) ---------------- */
+  const EV = window.EVENTO_FITO;
+  if (EV && EV.fecha) {
+    const MESES_LARGOS = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
+    const DIAS_LARGOS = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
+    const [ey, em, ed] = EV.fecha.split("-").map(Number);
+    const evDate = new Date(ey, em - 1, ed);
+    const evDone = new Date() > new Date(ey, em - 1, ed + 1, 6);
+    $("#eventoEspecial").hidden = false;
+    $("#navEvent").hidden = false;
+    $("#ebDay").textContent = ed;
+    $("#ebMonth").textContent = MESES_LARGOS[em - 1].slice(0, 3);
+    $("#ebTitle").textContent = "Homenaje a " + (EV.titulo || "Fito Páez");
+    $("#ebInfo").textContent = [
+      `${DIAS_LARGOS[evDate.getDay()]} ${ed} de ${MESES_LARGOS[em - 1]}`,
+      EV.hora ? EV.hora + " hs" : "",
+      EV.lugar || "",
+      EV.ciudad || ""
+    ]
+      .filter(Boolean)
+      .join(" · ");
+    if (evDone) {
+      $("#ebKicker").textContent = "Así se vivió";
+      $("#ebCta").textContent = "Ver fotos y videos →";
+    }
+  }
 
   /* ---------------- BANDA ---------------- */
   $("#bandDesc").textContent = banda.descripcion || "";
@@ -324,12 +382,36 @@
     });
   }
 
-  // La perilla del tocadiscos cambia la velocidad del vinilo
+  /* ---------------- TOCADISCOS ----------------
+     El vinilo y START/STOP reproducen el tema de la banda (o el loop si no hay
+     tema). El PITCH cambia la velocidad real ±8%, como una bandeja Technics:
+     acelerar también sube el tono. El disco gira solo mientras suena. */
   const vinyl = $("#vinyl");
   const pitchKnob = $(".turntable__knob");
+  const pitchOut = $("#pitchOut");
+  const BASE_SPIN = 1.8; // segundos por vuelta a 33⅓ RPM
+  if (hasTrack && tema.titulo) $("#vinylTitle").textContent = tema.titulo;
   initKnob(pitchKnob);
-  pitchKnob.addEventListener("knob", (e) => vinyl.style.setProperty("--spin", (3.2 - e.detail / 50).toFixed(2) + "s"));
-  pitchKnob.dispatchEvent(new CustomEvent("knob", { detail: +pitchKnob.getAttribute("aria-valuenow") }));
+  pitchKnob.addEventListener("knob", (e) => {
+    let pct = ((e.detail - 50) / 50) * 8;
+    if (Math.abs(pct) < 0.35) pct = 0; // punto central con "detent", como el fader de pitch real
+    const rate = 1 + pct / 100;
+    if (Audio) Audio.setRate(rate);
+    vinyl.style.setProperty("--spin", (BASE_SPIN / rate).toFixed(3) + "s");
+    pitchOut.textContent = pct === 0 ? "±0.0%" : (pct > 0 ? "+" : "") + pct.toFixed(1) + "%";
+    pitchOut.classList.toggle("is-off-center", pct !== 0);
+  });
+  pitchKnob.dispatchEvent(new CustomEvent("knob", { detail: 50 }));
+  if (Audio) {
+    vinyl.addEventListener("click", () => Audio.toggle());
+    $("#vinylStart").addEventListener("click", () => Audio.toggle());
+    Audio.on((type, on) => {
+      if (type !== "state") return;
+      vinyl.setAttribute("aria-pressed", String(on));
+      vinyl.setAttribute("aria-label", on ? "Pausar el tocadiscos" : "Reproducir el tema en el tocadiscos");
+      $("#vinylStart .led").classList.toggle("led--on", on);
+    });
+  }
 
   /* ---------------- INTEGRANTES (pedales) ---------------- */
   const ICONS = {
@@ -356,6 +438,8 @@
     const inst = ICONS[m.instrumento] ? m.instrumento : "otro";
     const photo = safeUrl(m.foto) || (m.foto && !/^[a-z]+:/i.test(m.foto) ? m.foto : "");
     const fxKey = fxFor(m);
+    const toma = String(m.toma || "").trim();
+    const hasToma = !!toma && !/^\s*javascript:/i.test(toma);
     const fxDef = FXDEFS[fxKey] || { label: fxKey.toUpperCase(), desc: "", knobs: [{ n: "VOL", d: 50 }, { n: "TONE", d: 50 }, { n: "GAIN", d: 50 }] };
     const vals = fxDef.knobs.map((k) => k.d / 100);
     const ch = String(i + 1).padStart(2, "0");
@@ -394,10 +478,10 @@
         <button class="pedal__switch" aria-pressed="false" aria-label="Activar ${esc(fxDef.label)} y escuchar a ${esc(m.rol)}">
           <span class="pedal__switch-cap"></span>
         </button>
-        <button class="pedal__replay" aria-label="Volver a escuchar">▶</button>
+        <button class="pedal__replay" aria-label="${hasToma ? "Reproducir la toma real" : "Volver a escuchar"}">▶</button>
       </div>
-      <span class="pedal__hint">Pisalo: escuchá con y sin efecto</span>
-      <span class="pedal__model">REV-${ch} · ${esc(fxKey.toUpperCase())}</span>
+      <span class="pedal__hint">${hasToma ? "▶ Toma real · pisalo para prender el efecto" : "Pisalo: escuchá con y sin efecto"}</span>
+      <span class="pedal__model">REV-${ch} · ${esc(fxKey.toUpperCase())}${hasToma ? ` · <b class="pedal__take">TOMA REAL</b>` : ""}</span>
     `;
 
     const state = $(".pedal__state", el);
@@ -412,33 +496,71 @@
     };
     showParams();
 
+    let takeOn = false;
+    let takeFailed = false;
+    const replay = $(".pedal__replay", el);
+
     const runMeter = () => {
       const lv = audioPedal ? audioPedal.level() : 0;
       const n = Math.min(10, Math.round(lv * 40));
       meter.forEach((seg, j) => seg.classList.toggle("is-lit", j < n));
-      if (performance.now() < meterUntil) requestAnimationFrame(runMeter);
+      if (takeOn || performance.now() < meterUntil) requestAnimationFrame(runMeter);
       else meter.forEach((seg) => seg.classList.remove("is-lit"));
     };
-
-    const play = () => {
-      if (!Audio) return;
-      if (!audioPedal) audioPedal = Audio.makePedal(fxKey, vals);
-      if (!audioPedal) return;
-      audioPedal.setOn(el.classList.contains("is-on"));
-      audioPedal.play(m.instrumento);
-      const already = performance.now() < meterUntil;
-      meterUntil = performance.now() + 3200;
+    const startMeter = (ms) => {
+      const already = takeOn || performance.now() < meterUntil;
+      meterUntil = Math.max(meterUntil, performance.now() + ms);
       if (!already) requestAnimationFrame(runMeter);
     };
+
+    const ensurePedal = () => {
+      if (!audioPedal && Audio) audioPedal = Audio.makePedal(fxKey, vals);
+      if (audioPedal) audioPedal.setOn(el.classList.contains("is-on"));
+      return audioPedal;
+    };
+
+    // Frase sintetizada (cuando no hay toma real, o si el archivo no carga)
+    const play = () => {
+      if (!ensurePedal()) return;
+      audioPedal.play(m.instrumento);
+      startMeter(3200);
+    };
+
+    // Toma real del músico: play/pausa en loop a través del pedal
+    const onTakeState = (ev) => {
+      if (ev === "error") {
+        // El archivo no cargó: el pedal vuelve a la frase sintetizada
+        takeFailed = true;
+        takeOn = false;
+        $(".pedal__hint", el).textContent = "Pisalo: escuchá con y sin efecto";
+        const badge = $(".pedal__take", el);
+        if (badge) badge.remove();
+        play();
+      } else {
+        if (ev === "play") startMeter(0); // antes de marcar takeOn, para que arranque el medidor
+        takeOn = ev === "play";
+      }
+      el.classList.toggle("is-take", takeOn);
+      replay.textContent = takeOn ? "❚❚" : "▶";
+      replay.setAttribute("aria-label", takeOn ? "Pausar la toma real" : "Reproducir la toma real");
+    };
+    const toggleTake = () => {
+      if (!ensurePedal()) return;
+      audioPedal.toggleTake(toma, onTakeState).catch(() => onTakeState("error"));
+    };
+    const useTake = () => hasToma && !takeFailed;
 
     sw.addEventListener("click", () => {
       const on = !el.classList.contains("is-on");
       el.classList.toggle("is-on", on);
       sw.setAttribute("aria-pressed", String(on));
       state.textContent = on ? `● ${fxDef.label} ON` : "BYPASS";
-      play();
+      if (useTake()) {
+        ensurePedal();
+        if (!takeOn) toggleTake(); // si la toma no sonaba, arranca; si sonaba, solo cambia el efecto
+      } else play();
     });
-    $(".pedal__replay", el).addEventListener("click", play);
+    replay.addEventListener("click", () => (useTake() ? toggleTake() : play()));
 
     board.appendChild(el);
     $$(".knob", el).forEach((k, j) => {
@@ -458,8 +580,7 @@
     if (m) return m[1];
     return /^[\w-]{11}$/.test(url) ? url : "";
   }
-  const videos = (DATA.videos || []).map((v) => ({ ...v, id: ytId(v.url) }));
-  const featIdx = Math.max(0, videos.findIndex((v) => v.destacado));
+  let videos = [];
   const featuredEl = $("#featuredVideo");
   const listEl = $("#videoList");
 
@@ -495,9 +616,15 @@
     $$(".tape", listEl).forEach((t) => t.classList.toggle("is-active", +t.dataset.i === i));
   }
 
-  listEl.innerHTML = videos
-    .map(
-      (v, i) => `
+  // Arma el monitor y la lista. Si hay videos con link, se ocultan los
+  // placeholders vacíos; los repetidos (mismo video) se muestran una vez.
+  function renderVideos(list) {
+    const seen = new Set();
+    videos = (list || []).map((v) => ({ ...v, id: ytId(v.url) }));
+    if (videos.some((v) => v.id)) videos = videos.filter((v) => v.id && !seen.has(v.id) && seen.add(v.id));
+    listEl.innerHTML = videos
+      .map(
+        (v, i) => `
       <button class="tape reveal" data-i="${i}" aria-label="Ver ${esc(v.titulo)}">
         <span class="tape__thumb">${v.id ? `<img src="https://i.ytimg.com/vi/${v.id}/mqdefault.jpg" alt="" loading="lazy">` : `<span class="tape__static"></span>`}</span>
         <span class="tape__body">
@@ -505,30 +632,47 @@
           <span class="tape__label"><b>${esc(v.titulo)}</b><small>${esc(v.lugar || "")}</small></span>
         </span>
       </button>`
-    )
-    .join("");
-  $$(".tape", listEl).forEach((t) =>
-    t.addEventListener("click", () => {
-      renderFeatured(+t.dataset.i, !!videos[+t.dataset.i].id);
-      if (innerWidth < 900) featuredEl.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "center" });
-    })
-  );
-  renderFeatured(featIdx, false);
+      )
+      .join("");
+    $$(".tape", listEl).forEach((t) =>
+      t.addEventListener("click", () => {
+        renderFeatured(+t.dataset.i, !!videos[+t.dataset.i].id);
+        if (innerWidth < 900) featuredEl.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "center" });
+      })
+    );
+    renderFeatured(Math.max(0, videos.findIndex((v) => v.destacado)), false);
+    observeReveal($("#videos"));
+  }
+  renderVideos(DATA.videos);
 
   /* ---------------- FECHAS ---------------- */
   const MESES = ["ENE", "FEB", "MAR", "ABR", "MAY", "JUN", "JUL", "AGO", "SEP", "OCT", "NOV", "DIC"];
   const DIAS = ["DOM", "LUN", "MAR", "MIÉ", "JUE", "VIE", "SÁB"];
-  const parseGig = (g) => {
-    const [y, mo, d] = String(g.fecha || "").split("-").map(Number);
-    const [hh, mm] = String(g.hora || "21:00").split(":").map(Number);
-    const date = new Date(y, (mo || 1) - 1, d || 1, hh || 0, mm || 0);
-    return { ...g, date };
+  // Fechas como texto de planilla: "24/10/2026", "24/10/26" o "2026-10-24"; hora "22:00" o "10:00 p. m."
+  const parseDate = (str) => {
+    const t = String(str || "").trim();
+    let m = t.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+    if (m) return [+m[1], +m[2], +m[3]];
+    m = t.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{2,4})/);
+    if (m) return [m[3].length === 2 ? 2000 + +m[3] : +m[3], +m[2], +m[1]];
+    return null;
   };
-  const now = new Date();
-  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const gigs = (DATA.fechas || []).filter((g) => g.fecha).map(parseGig).filter((g) => !isNaN(g.date));
-  const upcoming = gigs.filter((g) => g.date >= startOfToday).sort((a, b) => a.date - b.date);
-  const past = gigs.filter((g) => g.date < startOfToday).sort((a, b) => b.date - a.date);
+  const parseTime = (str) => {
+    const m = String(str || "").match(/(\d{1,2})[:.](\d{2})/);
+    if (!m) return [21, 0];
+    let h = +m[1];
+    if (/p\.?\s*m/i.test(str) && h < 12) h += 12;
+    if (/a\.?\s*m/i.test(str) && h === 12) h = 0;
+    return [h, +m[2]];
+  };
+  const parseGig = (g) => {
+    const d = parseDate(g.fecha);
+    if (!d) return null;
+    const [hh, mm] = parseTime(g.hora);
+    const date = new Date(d[0], d[1] - 1, d[2], hh, mm);
+    const hora = g.hora ? String(hh).padStart(2, "0") + ":" + String(mm).padStart(2, "0") : "";
+    return isNaN(date) ? null : { ...g, hora, date };
+  };
 
   const gigRow = (g, i, isPast) => {
     const tickets = safeUrl(g.entradas);
@@ -583,31 +727,115 @@
         </div>
       </div>`;
   }
-  $("#gigs").innerHTML = upcoming.length
-    ? upcoming.map((g, i) => gigRow(g, i, false)).join("")
-    : standbyPanel();
-  if (past.length) $("#pastGigs").innerHTML = past.map((g, i) => gigRow(g, i, true)).join("");
-  else $("#pastWrap").hidden = true;
+  let countdownTimer = null;
+  function renderFechas(list) {
+    const now = new Date();
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const gigs = (list || []).map(parseGig).filter(Boolean);
+    const upcoming = gigs.filter((g) => g.date >= startOfToday).sort((a, b) => a.date - b.date);
+    const past = gigs.filter((g) => g.date < startOfToday).sort((a, b) => b.date - a.date);
+
+    $("#gigs").innerHTML = upcoming.length ? upcoming.map((g, i) => gigRow(g, i, false)).join("") : standbyPanel();
+    $("#pastGigs").innerHTML = past.map((g, i) => gigRow(g, i, true)).join("");
+    $("#pastWrap").hidden = !past.length;
+
+    // Cuenta regresiva al próximo show
+    clearInterval(countdownTimer);
+    const nextGig = upcoming.find((g) => g.date > now);
+    $("#countdown").hidden = !nextGig;
+    if (nextGig) {
+      $("#cdVenue").textContent = [nextGig.lugar, nextGig.ciudad].filter(Boolean).join(" · ");
+      const pad = (n) => String(n).padStart(2, "0");
+      const tick = () => {
+        const s = Math.floor(Math.max(0, nextGig.date - new Date()) / 1000);
+        $("#cdD").textContent = pad(Math.floor(s / 86400));
+        $("#cdH").textContent = pad(Math.floor((s % 86400) / 3600));
+        $("#cdM").textContent = pad(Math.floor((s % 3600) / 60));
+        $("#cdS").textContent = pad(s % 60);
+      };
+      tick();
+      countdownTimer = setInterval(tick, 1000);
+    }
+    observeReveal($("#fechas"));
+  }
   $("#pastWrap").addEventListener("toggle", () => observeReveal($("#pastWrap")));
 
-  // Cuenta regresiva al próximo show
-  const nextGig = upcoming.find((g) => g.date > now);
-  if (nextGig) {
-    const cd = $("#countdown");
-    cd.hidden = false;
-    $("#cdVenue").textContent = `${nextGig.lugar} · ${nextGig.ciudad}`;
-    const pad = (n) => String(n).padStart(2, "0");
-    const tick = () => {
-      const diff = Math.max(0, nextGig.date - new Date());
-      const s = Math.floor(diff / 1000);
-      $("#cdD").textContent = pad(Math.floor(s / 86400));
-      $("#cdH").textContent = pad(Math.floor((s % 86400) / 3600));
-      $("#cdM").textContent = pad(Math.floor((s % 3600) / 60));
-      $("#cdS").textContent = pad(s % 60);
-    };
-    tick();
-    setInterval(tick, 1000);
+  /* ---------------- PLANILLA DE GOOGLE ----------------
+     La banda edita una planilla con dos pestañas, "Fechas" y "Videos", y la
+     web la lee al cargar. Acepta el link para compartir (".../d/ID/edit...")
+     o el de "Publicar en la web". Si falla, quedan los datos de content.js. */
+  function sheetCsvUrl(url, sheet) {
+    const u = String(url || "").trim();
+    if (!/^https:\/\/docs\.google\.com\/spreadsheets\//.test(u)) return "";
+    const tab = sheet ? "&sheet=" + encodeURIComponent(sheet) : "";
+    const gid = !sheet && (u.match(/[#&?]gid=(\d+)/) || [])[1];
+    const pub = u.match(/^(https:\/\/docs\.google\.com\/spreadsheets\/d\/e\/[\w-]+)/);
+    if (pub) return `${pub[1]}/pub?output=csv${tab}${gid ? "&gid=" + gid : ""}`;
+    const id = (u.match(/\/d\/([\w-]+)/) || [])[1];
+    return id ? `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:csv${tab}${gid ? "&gid=" + gid : ""}` : "";
   }
+  function parseCsv(text) {
+    const rows = [];
+    let row = [], cell = "", q = false;
+    for (let i = 0; i < text.length; i++) {
+      const c = text[i];
+      if (q) {
+        if (c === '"' && text[i + 1] === '"') (cell += '"'), i++;
+        else if (c === '"') q = false;
+        else cell += c;
+      } else if (c === '"') q = true;
+      else if (c === ",") row.push(cell), (cell = "");
+      else if (c === "\n" || c === "\r") {
+        if (c === "\r" && text[i + 1] === "\n") i++;
+        row.push(cell), rows.push(row), (row = []), (cell = "");
+      } else cell += c;
+    }
+    if (cell || row.length) row.push(cell), rows.push(row);
+    return rows;
+  }
+  // Convierte el CSV en objetos según los encabezados (sin importar mayúsculas ni tildes)
+  function sheetRows(text, cols, required) {
+    const [head, ...rows] = parseCsv(text);
+    if (!head) return [];
+    const norm = (h) => h.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
+    const idx = {};
+    head.forEach((h, i) => Object.entries(cols).forEach(([k, re]) => idx[k] == null && re.test(norm(h)) && (idx[k] = i)));
+    if (idx[required] == null) throw new Error("Falta la columna " + required);
+    return rows
+      .map((r) => Object.fromEntries(Object.keys(cols).map((k) => [k, idx[k] != null ? (r[idx[k]] || "").trim() : ""])))
+      .filter((g) => g[required]);
+  }
+  const FECHA_COLS = { fecha: /^fecha/, hora: /^hora/, lugar: /^lugar/, ciudad: /^(ciudad|localidad)/, entradas: /^(entrada|link)/, estado: /^(estado|etiqueta|nota)/ };
+  const VIDEO_COLS = { url: /^(link|url|video|youtube)/, titulo: /^titulo/, lugar: /^(lugar|descripcion)/, destacado: /^destacad/ };
+
+  const planilla = DATA.planilla || DATA.fechasPlanilla;
+  const loadSheet = (sheet, cols, required) => {
+    const url = sheetCsvUrl(planilla, sheet);
+    if (!url) return Promise.reject(new Error("Link de planilla inválido"));
+    return fetch(url, { cache: "no-store" })
+      .then((r) => (r.ok ? r.text() : Promise.reject(r.status)))
+      .then((text) => sheetRows(text, cols, required));
+  };
+
+  if (sheetCsvUrl(planilla)) {
+    $("#gigs").innerHTML = `<p class="gigs__loading">▸ Sincronizando fechas…</p>`;
+    // Pestaña "Fechas"; si no existe con ese nombre, la primera pestaña
+    loadSheet("Fechas", FECHA_COLS, "fecha")
+      .catch(() => loadSheet(null, FECHA_COLS, "fecha"))
+      .then(renderFechas)
+      .catch(() => renderFechas(DATA.fechas));
+    // Pestaña "Videos": primero los de la planilla, después los de content.js
+    loadSheet("Videos", VIDEO_COLS, "url")
+      .then((rows) => {
+        const fromSheet = rows
+          .filter((v) => ytId(v.url))
+          .map((v) => ({ ...v, destacado: /^(si|sí|x|true|1|yes)$/i.test(v.destacado) }));
+        if (!fromSheet.length) return;
+        const defaults = (DATA.videos || []).map((v) => (fromSheet.some((f) => f.destacado) ? { ...v, destacado: false } : v));
+        renderVideos(fromSheet.concat(defaults));
+      })
+      .catch(() => {});
+  } else renderFechas(DATA.fechas);
 
   /* ---------------- CONCEPTO (cadena de señal) ---------------- */
   const concepto = DATA.concepto || {};
@@ -748,6 +976,30 @@
     status.className = "console__status is-ok";
     Audio && Audio.init() && Audio.playInstrument("guitarra");
   });
+
+  /* ---------------- EQ MASTER ----------------
+     5 bandas reales sobre todo lo que suena en la web (tema, loop y pedales). */
+  const eqInputs = $$("#eq input[type=range]");
+  const eqOutputs = $$("#eq output");
+  const eqPlay = $("#eqPlay");
+  const setBand = (i, v) => {
+    eqInputs[i].value = v;
+    eqOutputs[i].textContent = (v > 0 ? "+" : "") + v;
+    eqOutputs[i].classList.toggle("is-boost", v > 0);
+    eqOutputs[i].classList.toggle("is-cut", v < 0);
+    if (Audio) Audio.setEQ(i, +v);
+  };
+  eqInputs.forEach((inp, i) => inp.addEventListener("input", () => setBand(i, +inp.value)));
+  $("#eqFlat").addEventListener("click", () => eqInputs.forEach((_, i) => setBand(i, 0)));
+  if (Audio) {
+    eqPlay.addEventListener("click", () => Audio.toggle());
+    Audio.on((type, on) => {
+      if (type !== "state") return;
+      eqPlay.setAttribute("aria-pressed", String(on));
+      eqPlay.textContent = on ? "❚❚ Pausar" : "▶ Escuchar";
+      $("#eqLed").classList.toggle("led--on", on);
+    });
+  } else eqPlay.hidden = true;
 
   // Contacto directo + redes
   if (waNum) {

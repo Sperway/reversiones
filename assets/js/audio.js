@@ -24,6 +24,31 @@
 
   const midi = (n) => 440 * Math.pow(2, (n - 69) / 12);
 
+  const EQ_BANDS = [
+    ["lowshelf", 60],
+    ["peaking", 250],
+    ["peaking", 1000],
+    ["peaking", 4000],
+    ["highshelf", 12000]
+  ];
+  A.eqBands = EQ_BANDS.map((b) => b[1]);
+  A._eqGains = EQ_BANDS.map(() => 0);
+
+  // Ganancia de una banda del EQ master, en dB (-12 a +12)
+  A.setEQ = function (i, db) {
+    A._eqGains[i] = db;
+    if (A.eq) A.eq[i].gain.setTargetAtTime(db, A.ctx.currentTime, 0.02);
+  };
+
+  /* Velocidad tipo tocadiscos (pitch): 1 = normal. Como en un vinilo,
+     acelerar también sube el tono (no se preserva la afinación). */
+  A.rate = 1;
+  A.setRate = function (r) {
+    A.rate = r;
+    A.bpm = 118 * r;
+    if (A._audioEl) A._audioEl.playbackRate = r;
+  };
+
   A.init = function () {
     if (A.ctx) {
       if (A.ctx.state === "suspended") A.ctx.resume();
@@ -55,15 +80,27 @@
     const aR = ctx.createAnalyser();
     aL.fftSize = aR.fftSize = 512;
 
+    // EQ master de 5 bandas (el ecualizador de la sección Contratar)
+    A.eq = EQ_BANDS.map(([type, freq], i) => {
+      const f = ctx.createBiquadFilter();
+      f.type = type;
+      f.frequency.value = freq;
+      if (type === "peaking") f.Q.value = 1.1;
+      f.gain.value = A._eqGains[i];
+      return f;
+    });
+    const eqOut = A.eq.reduce((prev, f) => (prev.connect(f), f), out);
+
     bus.connect(comp);
     comp.connect(out);
-    out.connect(analyser);
+    eqOut.connect(analyser);
     analyser.connect(ctx.destination);
-    out.connect(splitter);
+    eqOut.connect(splitter);
     splitter.connect(aL, 0);
     splitter.connect(aR, 1);
 
     A.master = bus;
+    A._out = out;
     A.analyser = analyser;
     A.analyserL = aL;
     A.analyserR = aR;
@@ -351,13 +388,63 @@
     }
   }
 
+  /* ---------------- Tema real de la banda ----------------
+     Si hay un archivo configurado, el botón del inicio reproduce ese tema
+     (en vez del loop sintetizado) y pasa por el mismo analizador que mueve
+     el espectro, el osciloscopio y los VU meters. */
+  A.track = null;
+  A.trackMode = false;
+  A._takes = new Set();
+
+  // Pausa las tomas de los integrantes (menos "except")
+  A.pauseTakes = function (except) {
+    A._takes.forEach((el) => el !== except && !el.paused && el.pause());
+  };
+
+  A.setTrack = function (url) {
+    A.track = url || null;
+  };
+
+  function trackElement() {
+    if (A._audioEl) return A._audioEl;
+    const el = new Audio();
+    el.src = A.track;
+    el.preload = "metadata";
+    el.preservesPitch = el.mozPreservesPitch = el.webkitPreservesPitch = false;
+    el.playbackRate = A.rate;
+    el.addEventListener("ended", () => {
+      el.currentTime = 0;
+      A.stop();
+    });
+    const src = A.ctx.createMediaElementSource(el);
+    const g = A.ctx.createGain();
+    g.gain.value = 1 / 0.7; // compensa la ganancia de salida: el tema suena a su volumen original
+    src.connect(g).connect(A._out); // sin el compresor del bus: la mezcla del tema queda intacta
+    A._audioEl = el;
+    return el;
+  }
+
+  function startSynth() {
+    A.trackMode = false;
+    A._step = 0;
+    A._nextTime = A.ctx.currentTime + 0.06;
+    A._timer = setInterval(scheduler, 25);
+  }
+
   A.start = function () {
     if (!A.init()) return false;
     if (A.playing) return true;
     A.playing = true;
-    A._step = 0;
-    A._nextTime = A.ctx.currentTime + 0.06;
-    A._timer = setInterval(scheduler, 25);
+    A.pauseTakes();
+    if (A.track) {
+      A.trackMode = true;
+      trackElement()
+        .play()
+        .catch(() => {
+          // Si el archivo no carga, cae al loop sintetizado
+          if (A.playing && A.trackMode) startSynth();
+        });
+    } else startSynth();
     A._emit("state", true);
     return true;
   };
@@ -366,11 +453,17 @@
     if (!A.playing) return;
     A.playing = false;
     clearInterval(A._timer);
+    if (A._audioEl) A._audioEl.pause(); // queda en pausa: al volver a tocar sigue desde ahí
     A._emit("state", false);
   };
 
   A.toggle = function () {
     return A.playing ? (A.stop(), false) : A.start();
+  };
+
+  A.trackTime = function () {
+    const el = A._audioEl;
+    return el ? { current: el.currentTime, duration: el.duration || 0 } : null;
   };
 
   /* ---------------- Sonido de cada integrante ---------------- */
@@ -750,7 +843,30 @@
         ramp(wet.gain, on ? 1 : 0);
       },
       play: (instrument) => A.playInstrument(instrument, input),
-      level: () => rms(analyser)
+      level: () => rms(analyser),
+
+      /* Toma real del músico (archivo de audio) pasando por este pedal.
+         Suena en loop; el footswitch prende/apaga el efecto sin cortarla. */
+      takeEl: null,
+      toggleTake(url, onState) {
+        let el = pedal.takeEl;
+        if (!el) {
+          el = pedal.takeEl = new Audio();
+          el.src = url;
+          el.loop = true;
+          el.preload = "auto";
+          ctx.createMediaElementSource(el).connect(input);
+          A._takes.add(el);
+          ["play", "pause", "error"].forEach((ev) => el.addEventListener(ev, () => onState && onState(ev)));
+        }
+        if (!el.paused) {
+          el.pause();
+          return Promise.resolve(false);
+        }
+        A.pauseTakes(el);
+        A.stop(); // el tema del inicio no suena encima de la toma
+        return el.play().then(() => true);
+      }
     };
     return pedal;
   };

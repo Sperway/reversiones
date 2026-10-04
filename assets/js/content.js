@@ -1,13 +1,8 @@
 /* =====================================================================
    REVERSIONES · CONTENIDO DEL SITIO
    ---------------------------------------------------------------------
-   Este es el ÚNICO archivo que hace falta tocar para actualizar la web.
-   - Videos:  agregá un objeto a "videos" con la URL de YouTube.
-   - Fechas:  agregá un objeto a "fechas" (formato de fecha AAAA-MM-DD).
-              Las fechas pasadas se mueven solas a "Shows anteriores".
-   - Integrantes, concepto, formatos y contacto: más abajo.
-   También podés usar /admin.html para generar este archivo sin
-   escribir código.
+   Contenido de la web: textos, integrantes, videos, tema, contacto.
+   Las FECHAS y los VIDEOS nuevos se cargan desde una planilla de Google (ver "planilla").
    ===================================================================== */
 
 window.REVERSIONES = {
@@ -23,6 +18,16 @@ window.REVERSIONES = {
       { valor: 10, sufijo: "", label: "Años de ruta" },
       { valor: 6, sufijo: "", label: "Músicos en escena" }
     ]
+  },
+
+  /* ---------- TEMA DEL INICIO ----------
+     Tema real que suena al tocar el botón del inicio. Subí el archivo a
+     assets/audio/ (mp3 recomendado) y poné la ruta. Si queda vacío,
+     suena un loop instrumental sintetizado. */
+  tema: {
+    archivo: "", // ej: "assets/audio/tema.mp3"
+    titulo: "",
+    detalle: "" // ej: "Reversión en vivo · 2026"
   },
 
   contacto: {
@@ -46,6 +51,8 @@ window.REVERSIONES = {
      fx: efecto REAL que aplica el pedal:
          reverb | overdrive | chorus | lowend | thunder | synth | delay | tremolo
      rango: frecuencias que ocupa en la mezcla · funcion: qué aporta al sonido de la banda
+     toma: toma real del músico (ej: "assets/audio/integrantes/voz.mp3"). Mejor una toma
+           SECA (sin efectos) de 10–30 s: el pedal le aplica su efecto en vivo. Vacío = sonido sintetizado.
      foto: ruta a una imagen (ej: "assets/img/integrantes/juan.jpg") o "" para usar ilustración. */
   integrantes: [
     {
@@ -56,6 +63,7 @@ window.REVERSIONES = {
       equipo: "Shure SM58",
       rango: "100 Hz – 1,2 kHz",
       funcion: "Lleva la melodía y la letra. Va al centro y al frente de la mezcla.",
+      toma: "",
       foto: ""
     },
     {
@@ -66,6 +74,7 @@ window.REVERSIONES = {
       equipo: "Stratocaster · Marshall",
       rango: "80 Hz – 5 kHz",
       funcion: "Riffs y solos en los medios-agudos: le da filo y corta la mezcla.",
+      toma: "",
       foto: ""
     },
     {
@@ -76,6 +85,7 @@ window.REVERSIONES = {
       equipo: "Telecaster · Fender",
       rango: "80 Hz – 5 kHz",
       funcion: "Colchón de acordes abierto en estéreo: rellena los costados de la mezcla.",
+      toma: "",
       foto: ""
     },
     {
@@ -86,6 +96,7 @@ window.REVERSIONES = {
       equipo: "Jazz Bass · Ampeg",
       rango: "40 Hz – 400 Hz",
       funcion: "Une el bombo con la armonía: es el piso de graves que se siente en el pecho.",
+      toma: "",
       foto: ""
     },
     {
@@ -96,6 +107,7 @@ window.REVERSIONES = {
       equipo: "Pearl · Zildjian",
       rango: "40 Hz – 16 kHz",
       funcion: "Marca el pulso: bombo en los graves, redoblante en los medios, platos arriba.",
+      toma: "",
       foto: ""
     },
     {
@@ -106,13 +118,15 @@ window.REVERSIONES = {
       equipo: "Nord · Korg",
       rango: "30 Hz – 8 kHz",
       funcion: "Pianos, pads y sintes: las texturas que cambian el color de cada reversión.",
+      toma: "",
       foto: ""
     }
   ],
 
-  /* ---------- VIDEOS ----------
-     url: link de YouTube (watch, youtu.be o shorts). El primero marcado
-     como destacado: true se muestra en grande. */
+  /* ---------- VIDEOS POR DEFECTO ----------
+     Se muestran siempre, después de los que la banda cargue en la planilla.
+     url: link de YouTube (watch, youtu.be, shorts o live). El marcado como
+     destacado: true se muestra en grande (si la planilla no marca otro). */
   videos: [
     { titulo: "En vivo · Reversiones", url: "", lugar: "Firmat, Santa Fe", destacado: true },
     { titulo: "Sesión en sala", url: "", lugar: "Ensayo abierto" },
@@ -120,7 +134,15 @@ window.REVERSIONES = {
     { titulo: "Show en bar", url: "", lugar: "Sur de Santa Fe" }
   ],
 
-  /* ---------- FECHAS ----------
+  /* ---------- PLANILLA DE GOOGLE (fechas y videos) ----------
+     Link de la planilla compartida como "Cualquier persona con el enlace: Lector".
+     Pestaña "Fechas": Fecha | Hora | Lugar | Ciudad | Entradas | Estado  (fecha DD/MM/AAAA)
+     Pestaña "Videos": Link | Título | Lugar | Destacado  (Destacado: "sí" en el que va grande)
+     La web la lee cada vez que alguien entra. */
+  planilla: "",
+
+  /* ---------- FECHAS (respaldo) ----------
+     Se usan solo si no hay planilla o si la planilla no se puede leer.
      fecha: "AAAA-MM-DD"  ·  hora: "21:30"  ·  entradas: link o "" */
   fechas: [
     // Ejemplo: { fecha: "2026-11-07", hora: "21:30", lugar: "Nombre del lugar", ciudad: "Firmat, Santa Fe", entradas: "", estado: "" }

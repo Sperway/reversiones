@@ -47,6 +47,7 @@
       <a href="#videos"><i>CH3</i>Videos</a>
       <a href="#fechas"><i>CH4</i>Fechas</a>
       <a href="#concepto"><i>CH5</i>Concepto</a>
+      <a href="eventos/fito-paez/" class="nav__event" id="navEvent" hidden><i>★</i>Fito Páez</a>
       <a href="#contratar" class="nav__cta"><i class="rec"></i>Contratar</a>
     </nav>
   </header>
@@ -69,6 +70,12 @@
             <span>Probar sonido</span>
           </button>
         </div>
+        <div class="nowplaying" id="nowPlaying" hidden aria-live="polite">
+          <span class="nowplaying__eq" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+          <span class="nowplaying__text"><b id="npTitle"></b><small id="npDetail"></small></span>
+          <span class="nowplaying__time" id="npTime">0:00</span>
+          <span class="nowplaying__bar" aria-hidden="true"><i id="npBar"></i></span>
+        </div>
       </div>
 
       <!-- VU meters analógicos -->
@@ -86,6 +93,21 @@
     <!-- Cinta animada -->
     <div class="marquee" aria-hidden="true"><div class="marquee__track" id="marquee"></div></div>
 
+    <!-- ============ EVENTO ESPECIAL (banner) ============ -->
+    <section class="event-banner-wrap" id="eventoEspecial" hidden>
+      <div class="container">
+        <a class="event-banner reveal" href="eventos/fito-paez/" id="eventBanner">
+          <span class="event-banner__stamp" aria-hidden="true"><b id="ebDay"></b><small id="ebMonth"></small></span>
+          <span class="event-banner__text">
+            <span class="event-banner__kicker" id="ebKicker">Evento especial · Reversiones presenta</span>
+            <span class="event-banner__title" id="ebTitle"></span>
+            <span class="event-banner__info" id="ebInfo"></span>
+          </span>
+          <span class="event-banner__cta" id="ebCta">Ver el evento →</span>
+        </a>
+      </div>
+    </section>
+
     <!-- ============ BANDA ============ -->
     <section class="section" id="banda">
       <div class="container">
@@ -102,14 +124,21 @@
             </ul>
           </div>
 
-          <div class="about__vinyl reveal" aria-hidden="true">
+          <div class="about__vinyl reveal">
             <div class="turntable">
-              <div class="vinyl" id="vinyl">
-                <div class="vinyl__label"><svg class="vinyl__rv" viewBox="0 0 116 80" aria-hidden="true"><use href="#rv"/></svg><small>33⅓ RPM · LADO A</small></div>
+              <button class="vinyl" id="vinyl" aria-pressed="false" aria-label="Reproducir el tema en el tocadiscos">
+                <span class="vinyl__label"><svg class="vinyl__rv" viewBox="0 0 116 80" aria-hidden="true"><use href="#rv"/></svg><small id="vinylTitle">33⅓ RPM · LADO A</small></span>
+              </button>
+              <div class="tonearm" aria-hidden="true"></div>
+              <div class="turntable__pitch">
+                <div class="turntable__knob knob" data-label="PITCH" data-value="50"></div>
+                <output class="turntable__lcd" id="pitchOut">±0.0%</output>
               </div>
-              <div class="tonearm"></div>
-              <div class="turntable__knob knob" data-label="PITCH"></div>
+              <button class="turntable__start" id="vinylStart" aria-label="Start / Stop">
+                <span class="led"></span>START · STOP
+              </button>
             </div>
+            <p class="turntable__hint">Tocá el vinilo para escuchar. El <b>PITCH</b> acelera o frena el tema como en una bandeja real (±8%).</p>
           </div>
         </div>
 
@@ -271,12 +300,22 @@
               <span class="contact-card__ico">@</span><span id="mailText"></span>
             </a>
             <div class="socials" id="socials"></div>
-            <div class="eq" aria-hidden="true">
-              <div class="eq__band"><input type="range" orient="vertical" min="-12" max="12" value="4" aria-label="EQ 60Hz"><small>60</small></div>
-              <div class="eq__band"><input type="range" orient="vertical" min="-12" max="12" value="2" aria-label="EQ 250Hz"><small>250</small></div>
-              <div class="eq__band"><input type="range" orient="vertical" min="-12" max="12" value="-2" aria-label="EQ 1kHz"><small>1K</small></div>
-              <div class="eq__band"><input type="range" orient="vertical" min="-12" max="12" value="3" aria-label="EQ 4kHz"><small>4K</small></div>
-              <div class="eq__band"><input type="range" orient="vertical" min="-12" max="12" value="6" aria-label="EQ 12kHz"><small>12K</small></div>
+            <div class="eq" id="eq">
+              <div class="eq__head">
+                <span><span class="led" id="eqLed"></span>EQ MASTER</span>
+                <span class="eq__btns">
+                  <button type="button" class="eq__btn" id="eqPlay" aria-pressed="false">▶ Escuchar</button>
+                  <button type="button" class="eq__btn" id="eqFlat">FLAT</button>
+                </span>
+              </div>
+              <div class="eq__bands">
+                <div class="eq__band"><output>0</output><input type="range" min="-12" max="12" step="1" value="0" aria-label="Ecualizador 60 Hz"><small>60</small></div>
+                <div class="eq__band"><output>0</output><input type="range" min="-12" max="12" step="1" value="0" aria-label="Ecualizador 250 Hz"><small>250</small></div>
+                <div class="eq__band"><output>0</output><input type="range" min="-12" max="12" step="1" value="0" aria-label="Ecualizador 1 kHz"><small>1K</small></div>
+                <div class="eq__band"><output>0</output><input type="range" min="-12" max="12" step="1" value="0" aria-label="Ecualizador 4 kHz"><small>4K</small></div>
+                <div class="eq__band"><output>0</output><input type="range" min="-12" max="12" step="1" value="0" aria-label="Ecualizador 12 kHz"><small>12K</small></div>
+              </div>
+              <p class="eq__hint">Ecualizá el tema de la banda en vivo: graves, medios y agudos (±12 dB).</p>
             </div>
           </aside>
         </div>
@@ -295,6 +334,7 @@
 
 
   <script src="assets/js/content.js"></script>
+  <script src="assets/js/evento-fito.js"></script>
   <script src="assets/js/audio.js"></script>
   <script src="assets/js/main.js"></script>
 </body>
