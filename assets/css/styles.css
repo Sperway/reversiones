@@ -216,7 +216,7 @@ button {
 .loader__logo {
   display: block;
   width: 120px;
-  height: 83px;
+  height: 97px;
   margin: 0 auto 14px;
   fill: var(--text);
   filter: drop-shadow(0 0 18px rgba(255, 176, 0, 0.35));
@@ -323,7 +323,7 @@ button {
 }
 .nav__rv {
   width: 40px;
-  height: 28px;
+  height: 32px;
   fill: currentColor;
   transition: fill 0.1s, filter 0.1s;
 }
@@ -571,8 +571,8 @@ button {
   transform: scale(1.08);
 }
 .hero__rv {
-  width: 64px;
-  height: 44px;
+  width: 62px;
+  height: 50px;
   fill: #f2f2f2;
 }
 .hero__kicker {
@@ -1164,8 +1164,8 @@ button {
   line-height: 1;
 }
 .vinyl__rv {
-  width: clamp(34px, 6vw, 50px);
-  height: clamp(24px, 4vw, 34px);
+  width: clamp(34px, 6vw, 48px);
+  height: clamp(27px, 4.85vw, 39px);
   margin: 0 auto;
   fill: #111;
   transform: translateY(-8px);
@@ -3024,7 +3024,7 @@ button {
 }
 .footer__rv {
   width: 72px;
-  height: 50px;
+  height: 58px;
   fill: var(--amber);
   margin-bottom: 10px;
 }

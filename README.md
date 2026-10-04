@@ -61,7 +61,11 @@ Campo `fx` de cada integrante: `reverb`, `overdrive`, `chorus`, `lowend`, `thund
 Cada integrante puede tener una **toma real** (campo `toma`, ej: `"assets/audio/integrantes/voz.mp3"`). Con toma, el botón ▶ del pedal la reproduce en loop y el footswitch prende o apaga el efecto en vivo sin cortarla; las perillas cambian el efecto en tiempo real. Conviene que sea una toma **seca** (sin efectos) de 10–30 s, en MP3. Sin toma, el pedal usa una frase sintetizada.
 
 ### Logo
-El logo RV está en `assets/img/logo-rv.svg` (vector) y como símbolo `#rv` dentro de `index.html`.
+Vectorizado a partir del logo oficial de la banda, sin fondo:
+- `assets/img/logo-rv.svg` (blanco) y `assets/img/logo-rv-negro.svg` (negro) — vectores, se ven nítidos en cualquier tamaño.
+- `assets/img/logo-rv-blanco.png` y `assets/img/logo-rv-negro.png` — 1200 px, fondo transparente.
+- En la web se usa como símbolo `#rv` dentro de cada HTML (se puede pintar de cualquier color con CSS).
+- Favicon: `favicon.svg` (negro en pestañas claras, blanco en oscuras), `favicon-32.png` de respaldo y `apple-touch-icon.png` (iPhone, con fondo negro).
 
 ### Fotos de los integrantes
 Subí las fotos a `assets/img/integrantes/` y poné la ruta en el campo `foto` (ej: `assets/img/integrantes/juan.jpg`). Si queda vacío se muestra el ícono del instrumento.
